@@ -2,8 +2,8 @@
 <html lang="es-AR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#1f6f5c">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14574a">
 <title>Etios - Nafta</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -12,94 +12,150 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Etios Nafta">
 <style>
-  :root{--bg:#f4f6f5;--card:#fff;--ink:#1c2321;--mut:#6a7570;--main:#1f6f5c;--line:#dfe5e2;--bad:#b3261e}
-  @media (prefers-color-scheme:dark){:root{--bg:#121715;--card:#1b2220;--ink:#e8eeeb;--mut:#93a09a;--main:#4fb89d;--line:#2c3733;--bad:#f2867e}}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
-  main{max-width:640px;margin:0 auto;padding:16px}
-  h1{font-size:22px;margin:4px 0 14px}
-  h2{font-size:16px;margin:0 0 10px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  label{display:block;font-size:13px;color:var(--mut);margin-bottom:3px}
-  input,select{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+  :root{
+    --bg:#eef3f1;--card:#ffffff;--ink:#14211d;--mut:#6b7a74;--line:#e3ebe8;
+    --main:#1f6f5c;--main2:#14574a;--soft:#e6f3ef;--field:#f5f8f7;--bad:#c0392b;
+    --sh:0 1px 2px rgba(20,33,29,.05),0 6px 18px rgba(20,33,29,.07);
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --bg:#0e1412;--card:#18201d;--ink:#e9f0ed;--mut:#8fa19a;--line:#26312d;
+    --main:#4fb89d;--main2:#0f3d34;--soft:#1d2c27;--field:#111916;--bad:#f2867e;
+    --sh:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);}}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:env(safe-area-inset-bottom)}
+  .hero{background:linear-gradient(160deg,#1f6f5c 0%,#14574a 100%);color:#fff;
+    padding:calc(env(safe-area-inset-top) + 22px) 20px 78px;}
+  .hero-in{max-width:640px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;opacity:.95}
+  .brand img{width:34px;height:34px;border-radius:9px}
+  .big-n{margin-top:20px;font-size:54px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+  .big-n small{font-size:18px;font-weight:500;letter-spacing:0;opacity:.8;margin-left:6px}
+  .big-l{margin-top:6px;font-size:14px;opacity:.8}
+  main{max-width:640px;margin:-54px auto 0;padding:0 14px 28px}
+  .card{background:var(--card);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+  h2{font-size:13px;margin:0 0 12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .stat{background:var(--soft);border-radius:14px;padding:12px 10px}
+  .stat b{display:block;font-size:19px;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
+  .stat span{display:block;font-size:11.5px;color:var(--mut);line-height:1.25;margin-top:2px}
+  .tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:0}
+  .tipos .stat{background:var(--field);border:1px solid var(--line)}
+  .tipos .stat .ic{font-size:20px;display:block;margin-bottom:4px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .full{grid-column:1/-1}
-  .chk input{width:auto}
-  .chk{display:flex;gap:8px;align-items:center;font-size:15px;color:var(--ink)}
-  .chk input{width:auto}
-  button{font:inherit;border:0;border-radius:10px;padding:12px 14px;background:var(--main);color:#fff;font-weight:600;cursor:pointer}
-  button.sec{background:transparent;color:var(--main);border:1px solid var(--main);font-weight:500}
-  button.x{background:transparent;color:var(--bad);padding:4px 8px;font-size:18px}
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .stat{background:var(--bg);border-radius:10px;padding:10px}
-  .stat b{display:block;font-size:22px}
-  .stat span{font-size:12px;color:var(--mut)}
-  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
-  .row:first-of-type{border-top:0}
-  .row small{color:var(--mut)}
-  .big{font-weight:600}
-  .err{color:var(--bad);font-size:14px;min-height:18px;margin-top:6px}
-  .bar{display:flex;gap:8px;flex-wrap:wrap}
+  label.l{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin:0 0 6px 2px}
+  input[type=text],input[type=datetime-local],input:not([type]){
+    width:100%;font:inherit;font-size:17px;padding:13px 14px;border:1.5px solid transparent;border-radius:13px;
+    background:var(--field);color:var(--ink);outline:none;transition:border-color .15s,background .15s;appearance:none;-webkit-appearance:none}
+  input:focus{border-color:var(--main);background:var(--card)}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .seg input{position:absolute;opacity:0;pointer-events:none}
+  .seg label{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 4px;border-radius:13px;
+    background:var(--field);border:1.5px solid transparent;font-size:14px;font-weight:600;cursor:pointer;color:var(--mut);transition:all .15s}
+  .seg label span{font-size:22px}
+  .seg input:checked+label{background:var(--soft);border-color:var(--main);color:var(--main)}
+  .sw{display:flex;align-items:center;justify-content:space-between;background:var(--field);border-radius:13px;padding:12px 14px;font-size:15px;font-weight:500}
+  .sw input{position:absolute;opacity:0}
+  .sw i{width:46px;height:28px;border-radius:99px;background:#b8c4bf;position:relative;transition:background .2s;flex:none}
+  .sw i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+  .sw input:checked+i{background:var(--main)}
+  .sw input:checked+i::after{transform:translateX(18px)}
+  button{font:inherit;border:0;cursor:pointer}
+  .go{width:100%;padding:15px;border-radius:14px;background:linear-gradient(160deg,var(--main),var(--main2));color:#fff;font-size:17px;font-weight:700;
+    box-shadow:0 6px 16px rgba(31,111,92,.35);transition:transform .1s}
+  .go:active{transform:scale(.98)}
+  .sec{background:var(--soft);color:var(--main);border-radius:12px;padding:12px 16px;font-weight:600;font-size:14.5px}
+  .err{color:var(--bad);font-size:14px;margin-top:10px;font-weight:500}
+  .err:empty{display:none}
+  .item{display:flex;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
+  .item:first-child{border-top:0;padding-top:2px}
+  .chip{width:42px;height:42px;border-radius:13px;background:var(--soft);display:grid;place-items:center;font-size:21px;flex:none}
+  .item .mid{flex:1;min-width:0}
+  .item .t1{font-weight:650;font-size:15.5px}
+  .item .t2{font-size:13px;color:var(--mut)}
+  .badge{display:inline-block;margin-top:5px;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--main);font-size:12.5px;font-weight:700}
+  .badge.p{background:var(--field);color:var(--mut);font-weight:600}
+  .x{background:none;color:var(--mut);font-size:17px;padding:8px;border-radius:10px;opacity:.6}
+  .x:active{background:var(--field)}
+  .vacio{text-align:center;color:var(--mut);padding:18px 0 6px}
+  .vacio span{font-size:34px;display:block;margin-bottom:6px}
+  .nota{font-size:12.5px;color:var(--mut);margin:12px 2px 0}
+  .bar{display:flex;gap:10px;flex-wrap:wrap}
+  @media (max-width:380px){.stat b{font-size:17px}.big-n{font-size:46px}}
 </style>
 </head>
 <body>
-<main>
-  <h1>⛽ Etios · Nafta</h1>
 
-  <div class="card">
+<header class="hero"><div class="hero-in">
+  <div class="brand"><img src="icon-192.png" alt="">Etios · Nafta</div>
+  <div class="big-n"><span id="sCons">—</span><small>L/100 km</small></div>
+  <div class="big-l">Consumo promedio</div>
+</div></header>
+
+<main>
+  <section class="card">
     <h2>Resumen</h2>
     <div class="stats">
-      <div class="stat"><b id="sCons">—</b><span>L/100 km (promedio)</span></div>
       <div class="stat"><b id="sKml">—</b><span>km por litro</span></div>
-      <div class="stat"><b id="sCkm">—</b><span>$ por km</span></div>
-      <div class="stat"><b id="sPl">—</b><span>$ por litro (última)</span></div>
-      <div class="stat"><b id="sGasto">—</b><span>Gastado en total</span></div>
-      <div class="stat"><b id="sUlt">—</b><span>Último consumo (L/100 km)</span></div>
+      <div class="stat"><b id="sCkm">—</b><span>costo por km</span></div>
+      <div class="stat"><b id="sUlt">—</b><span>último tramo (L/100)</span></div>
+      <div class="stat"><b id="sPl">—</b><span>precio por litro</span></div>
+      <div class="stat" style="grid-column:span 2"><b id="sGasto">—</b><span>gastado en total</span></div>
     </div>
-    <h2 style="margin-top:14px">Según el tipo de recorrido</h2>
-    <div class="stats" id="porTipo" style="grid-template-columns:1fr 1fr 1fr"></div>
-  </div>
+  </section>
 
-  <form class="card" id="f">
+  <section class="card">
+    <h2>Según el recorrido</h2>
+    <div class="tipos" id="porTipo"></div>
+  </section>
+
+  <form class="card" id="f" autocomplete="off">
     <h2>Nueva carga</h2>
     <div class="grid">
-      <div class="full"><label>Fecha y hora (se completa sola)</label><input type="datetime-local" id="fh" required></div>
-      <div><label>Litros</label><input id="lt" inputmode="decimal" placeholder="35,5" required></div>
-      <div><label>Plata gastada ($)</label><input id="pl" inputmode="decimal" placeholder="45000" required></div>
-      <div class="full"><label>Km del odómetro</label><input id="km" inputmode="numeric" placeholder="85230" required></div>
-      <div class="full"><label>¿Cómo fue el recorrido desde la carga anterior?</label>
-        <select id="tipo"><option value="ciudad">🏙️ Ciudad</option><option value="mixto" selected>🔀 Mixto</option><option value="ruta">🛣️ Ruta</option></select></div>
-      <div class="full chk"><input type="checkbox" id="lleno" checked><label for="lleno" style="margin:0;color:inherit">Llené el tanque</label></div>
-      <div class="full"><button type="submit" style="width:100%">Guardar carga</button></div>
+      <div class="full"><label class="l">Fecha y hora (se completa sola)</label><input type="datetime-local" id="fh" required></div>
+      <div><label class="l">Litros</label><input id="lt" inputmode="decimal" placeholder="35,5" required></div>
+      <div><label class="l">Plata gastada ($)</label><input id="pl" inputmode="decimal" placeholder="45000" required></div>
+      <div class="full"><label class="l">Km del odómetro</label><input id="km" inputmode="numeric" placeholder="85230" required></div>
+      <div class="full"><label class="l">¿Cómo fue el recorrido desde la carga anterior?</label>
+        <div class="seg">
+          <input type="radio" name="tipo" id="t1" value="ciudad"><label for="t1"><span>🏙️</span>Ciudad</label>
+          <input type="radio" name="tipo" id="t2" value="mixto" checked><label for="t2"><span>🔀</span>Mixto</label>
+          <input type="radio" name="tipo" id="t3" value="ruta"><label for="t3"><span>🛣️</span>Ruta</label>
+        </div></div>
+      <div class="full"><label class="sw">Llené el tanque<input type="checkbox" id="lleno" checked><i></i></label></div>
+      <div class="full"><button type="submit" class="go">Guardar carga</button></div>
     </div>
     <div class="err" id="err"></div>
   </form>
 
-  <div class="card">
+  <section class="card">
     <h2>Cargas</h2>
     <div id="lista"></div>
-    <p id="vacio" style="color:var(--mut)">Todavía no hay cargas.</p>
-  </div>
+    <div class="vacio" id="vacio"><span>⛽</span>Todavía no hay cargas.<br>Anotá la primera arriba.</div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <h2>Respaldo</h2>
     <div class="bar">
-      <button class="sec" id="exp">Descargar respaldo</button>
-      <button class="sec" id="impB">Restaurar respaldo</button>
+      <button class="sec" id="exp">⬇ Descargar respaldo</button>
+      <button class="sec" id="impB">⬆ Restaurar</button>
       <input type="file" id="imp" accept=".json" hidden>
     </div>
-    <p style="font-size:13px;color:var(--mut);margin-bottom:0">Los datos quedan solo en este aparato. Descargá el respaldo de vez en cuando. Si llenás el tanque siempre, el consumo es más preciso.</p>
-  </div>
+    <p class="nota">Los datos quedan solo en este aparato. Descargá el respaldo de vez en cuando. El consumo se calcula entre cargas de tanque lleno.</p>
+  </section>
 </main>
 
 <script>
 const KEY='etios-nafta-v1';
-const ETQ={ciudad:'🏙️ Ciudad',mixto:'🔀 Mixto',ruta:'🛣️ Ruta'};
+const ETQ={ciudad:'Ciudad',mixto:'Mixto',ruta:'Ruta'};
+const ICO={ciudad:'🏙️',mixto:'🔀',ruta:'🛣️'};
 let cargas=[];
 try{cargas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){cargas=[]}
 const $=id=>document.getElementById(id);
 const num=s=>parseFloat(String(s).replace(/\./g,'').replace(',','.'));
-const numL=s=>parseFloat(String(s).replace(',','.')); // litros: acepta 35,5 o 35.5
+const numL=s=>parseFloat(String(s).replace(',','.'));
 const fmt=(n,d=1)=>isFinite(n)?n.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const peso=n=>'$ '+Math.round(n).toLocaleString('es-AR');
 function ahora(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
@@ -108,15 +164,15 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(cargas))}catch(e){}}
 // Consumo por tramo: entre dos cargas "tanque lleno", litros cargados después de la primera (incluida la última) / km recorridos
 function calcular(){
   const o=[...cargas].sort((a,b)=>a.km-b.km);
-  let ancla=null, litros=0, tipos=new Set(), res=[];
+  let ancla=null, litros=0, plata=0, tipos=new Set(), res=[];
   o.forEach(c=>{
-    if(ancla){litros+=c.litros; tipos.add(c.tipo||'mixto')}
+    if(ancla){litros+=c.litros; plata+=c.plata; tipos.add(c.tipo||'mixto')}
     if(c.lleno){
       if(ancla && c.km>ancla.km){
         const km=c.km-ancla.km;
-        res.push({id:c.id,km,litros,cons:litros/km*100,tipo:tipos.size===1?[...tipos][0]:'mixto'});
+        res.push({id:c.id,km,litros,plata,cons:litros/km*100,tipo:tipos.size===1?[...tipos][0]:'mixto'});
       }
-      ancla=c; litros=0; tipos=new Set();
+      ancla=c; litros=0; plata=0; tipos=new Set();
     }
   });
   return res;
@@ -127,34 +183,29 @@ function render(){
   const tr=calcular(), mapa={}; tr.forEach(t=>mapa[t.id]=t);
   const L=$('lista'); L.innerHTML='';
   cargas.forEach(c=>{
-    const d=new Date(c.fh), t=mapa[c.id];
-    const r=document.createElement('div'); r.className='row';
-    r.innerHTML=`<div><span class="big">${d.toLocaleDateString('es-AR')} ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span><br>
-      <small>${fmt(c.litros)} L · ${peso(c.plata)} · ${fmt(c.plata/c.litros,0)} $/L · ${c.km.toLocaleString('es-AR')} km${c.lleno?'':' · parcial'}</small>
-      <br><small>${ETQ[c.tipo||'mixto']}</small>
-      ${t?`<br><small><b>${fmt(t.cons)} L/100 km</b> en ${t.km.toLocaleString('es-AR')} km</small>`:''}</div>
+    const d=new Date(c.fh), t=mapa[c.id], tipo=c.tipo||'mixto';
+    const r=document.createElement('div'); r.className='item';
+    r.innerHTML=`<div class="chip">${ICO[tipo]}</div>
+      <div class="mid">
+        <div class="t1">${d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})} · ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="t2">${fmt(c.litros)} L · ${peso(c.plata)} · ${c.km.toLocaleString('es-AR')} km</div>
+        ${t?`<span class="badge">${fmt(t.cons)} L/100 km · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
+      </div>
       <button class="x" title="Borrar" data-id="${c.id}">✕</button>`;
     L.appendChild(r);
   });
   $('vacio').style.display=cargas.length?'none':'';
-  // resumen
-  const kmT=tr.reduce((s,t)=>s+t.km,0), ltT=tr.reduce((s,t)=>s+t.litros,0);
+  const kmT=tr.reduce((s,t)=>s+t.km,0), ltT=tr.reduce((s,t)=>s+t.litros,0), plT=tr.reduce((s,t)=>s+t.plata,0);
   $('sCons').textContent=kmT?fmt(ltT/kmT*100):'—';
   $('sKml').textContent=kmT?fmt(kmT/ltT):'—';
+  $('sCkm').textContent=kmT?peso(plT/kmT):'—';
   $('sUlt').textContent=tr.length?fmt(tr[tr.length-1].cons):'—';
   $('sGasto').textContent=cargas.length?peso(cargas.reduce((s,c)=>s+c.plata,0)):'—';
   $('sPl').textContent=cargas.length?peso(cargas[0].plata/cargas[0].litros):'—';
-  // consumo por tipo de recorrido
   $('porTipo').innerHTML=['ciudad','mixto','ruta'].map(k=>{
     const ts=tr.filter(t=>t.tipo===k), km=ts.reduce((s,t)=>s+t.km,0), lt=ts.reduce((s,t)=>s+t.litros,0);
-    return `<div class="stat"><b>${km?fmt(lt/km*100):'—'}</b><span>${ETQ[k]} · L/100 km${km?` (${km.toLocaleString('es-AR')} km)`:''}</span></div>`;
+    return `<div class="stat"><span class="ic">${ICO[k]}</span><b>${km?fmt(lt/km*100):'—'}</b><span>${ETQ[k]}${km?` · ${km.toLocaleString('es-AR')} km`:''}</span></div>`;
   }).join('');
-  // $/km: plata de las cargas que entran en tramos / km
-  if(kmT){
-    const o=[...cargas].sort((a,b)=>a.km-b.km); let ancla=null,p=0,tot=0;
-    o.forEach(c=>{if(ancla)p+=c.plata; if(c.lleno){if(ancla&&c.km>ancla.km)tot+=p; ancla=c;p=0}});
-    $('sCkm').textContent=peso(tot/kmT);
-  } else $('sCkm').textContent='—';
 }
 
 $('f').addEventListener('submit',e=>{
@@ -164,12 +215,12 @@ $('f').addEventListener('submit',e=>{
   if(!(litros>0&&plata>0&&km>0&&fh)){err.textContent='Revisá los datos: litros, plata y km tienen que ser números.';return}
   const prev=cargas.filter(c=>c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
   if(prev&&km<=prev.km){err.textContent=`El odómetro (${km}) tiene que ser mayor al de la carga anterior (${prev.km}).`;return}
-  cargas.push({id:Date.now().toString(36),fh,litros,plata,km,tipo:$('tipo').value,lleno:$('lleno').checked});
-  save(); $('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('tipo').value='mixto'; render();
+  cargas.push({id:Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked});
+  save(); $('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('t2').checked=true; render();
 });
 $('lista').addEventListener('click',e=>{
-  const id=e.target.dataset&&e.target.dataset.id; if(!id)return;
-  if(confirm('¿Borrar esta carga?')){cargas=cargas.filter(c=>c.id!==id);save();render()}
+  const b=e.target.closest('[data-id]'); if(!b)return;
+  if(confirm('¿Borrar esta carga?')){cargas=cargas.filter(c=>c.id!==b.dataset.id);save();render()}
 });
 $('exp').onclick=()=>{
   const a=document.createElement('a');
