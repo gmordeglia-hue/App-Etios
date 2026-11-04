@@ -107,8 +107,14 @@
   </section>
 
   <section class="card">
-    <h2>Según el recorrido</h2>
+    <h2>Según el recorrido · L/100 km</h2>
     <div class="tipos" id="porTipo"></div>
+  </section>
+
+  <section class="card">
+    <h2>Estaciones · $ por litro</h2>
+    <div id="estac"></div>
+    <p class="nota" id="estacNota" style="margin-top:6px">Se compara el precio de la última carga en cada estación.</p>
   </section>
 
   <form class="card" id="f" autocomplete="off">
@@ -123,6 +129,13 @@
           <input type="radio" name="tipo" id="t1" value="ciudad"><label for="t1"><span>🏙️</span>Ciudad</label>
           <input type="radio" name="tipo" id="t2" value="mixto" checked><label for="t2"><span>🔀</span>Mixto</label>
           <input type="radio" name="tipo" id="t3" value="ruta"><label for="t3"><span>🛣️</span>Ruta</label>
+        </div></div>
+      <div class="full"><label class="l">Estación de servicio</label>
+        <input id="est" list="estList" placeholder="Ej: YPF Santa Fe y Scalabrini" maxlength="60">
+        <datalist id="estList"></datalist>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+          <button type="button" class="sec" id="gps">📍 Usar mi ubicación</button>
+          <span class="nota" id="gpsEst" style="margin:0"></span>
         </div></div>
       <div class="full"><label class="sw">Llené el tanque<input type="checkbox" id="lleno" checked><i></i></label></div>
       <div class="full"><button type="submit" class="go">Guardar carga</button></div>
@@ -158,6 +171,16 @@ const num=s=>parseFloat(String(s).replace(/\./g,'').replace(',','.'));
 const numL=s=>parseFloat(String(s).replace(',','.'));
 const fmt=(n,d=1)=>isFinite(n)?n.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const peso=n=>'$ '+Math.round(n).toLocaleString('es-AR');
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let pos=null;
+$('gps').onclick=()=>{
+  const s=$('gpsEst'); s.textContent='Buscando ubicación…';
+  if(!navigator.geolocation){s.textContent='Este navegador no da la ubicación. Escribí la estación a mano.';return}
+  navigator.geolocation.getCurrentPosition(
+    p=>{pos={lat:+p.coords.latitude.toFixed(5),lon:+p.coords.longitude.toFixed(5)};s.textContent='✔ Ubicación guardada';},
+    ()=>{pos=null;s.textContent='No pude tomar la ubicación. Escribí la estación a mano.'},
+    {enableHighAccuracy:true,timeout:15000,maximumAge:60000});
+};
 function ahora(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(cargas))}catch(e){}}
 
@@ -189,6 +212,7 @@ function render(){
       <div class="mid">
         <div class="t1">${d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})} · ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</div>
         <div class="t2">${fmt(c.litros)} L · ${peso(c.plata)} · ${c.km.toLocaleString('es-AR')} km</div>
+        ${c.est||c.lat?`<div class="t2">⛽ ${esc(c.est||'Estación')}${c.lat?` · <a href="https://www.google.com/maps?q=${c.lat},${c.lon}" target="_blank" rel="noopener" style="color:var(--main)">ver mapa</a>`:''}</div>`:''}
         ${t?`<span class="badge">${fmt(t.cons)} L/100 km · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
       </div>
       <button class="x" title="Borrar" data-id="${c.id}">✕</button>`;
@@ -202,6 +226,16 @@ function render(){
   $('sUlt').textContent=tr.length?fmt(tr[tr.length-1].cons):'—';
   $('sGasto').textContent=cargas.length?peso(cargas.reduce((s,c)=>s+c.plata,0)):'—';
   $('sPl').textContent=cargas.length?peso(cargas[0].plata/cargas[0].litros):'—';
+  // estaciones: última carga de cada una
+  const vistas=new Map();
+  cargas.forEach(c=>{const n=(c.est||'').trim(); if(!n)return; const k=n.toLowerCase(); if(!vistas.has(k))vistas.set(k,{n,ppl:c.plata/c.litros,fh:c.fh})});
+  const est=[...vistas.values()].sort((a,b)=>a.ppl-b.ppl);
+  $('estac').innerHTML=est.length?est.map((s,i)=>{
+    const tag=est.length>1&&i===0?'<span class="badge">💚 Más barata</span>':est.length>1&&i===est.length-1?'<span class="badge p">🔺 Más cara</span>':'';
+    const dif=est.length>1&&i>0?` · +${peso(s.ppl-est[0].ppl)} vs la más barata`:'';
+    return `<div class="item"><div class="mid"><div class="t1">${esc(s.n)}</div><div class="t2">${new Date(s.fh).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}${dif}</div>${tag}</div><div class="t1">${peso(s.ppl)}<span class="t2">/L</span></div></div>`;
+  }).join(''):'<div class="vacio" style="padding:8px 0">Anotá la estación al cargar y acá aparece la comparación.</div>';
+  $('estList').innerHTML=est.map(s=>`<option value="${esc(s.n)}">`).join('');
   $('porTipo').innerHTML=['ciudad','mixto','ruta'].map(k=>{
     const ts=tr.filter(t=>t.tipo===k), km=ts.reduce((s,t)=>s+t.km,0), lt=ts.reduce((s,t)=>s+t.litros,0);
     return `<div class="stat"><span class="ic">${ICO[k]}</span><b>${km?fmt(lt/km*100):'—'}</b><span>${ETQ[k]}${km?` · ${km.toLocaleString('es-AR')} km`:''}</span></div>`;
@@ -215,8 +249,9 @@ $('f').addEventListener('submit',e=>{
   if(!(litros>0&&plata>0&&km>0&&fh)){err.textContent='Revisá los datos: litros, plata y km tienen que ser números.';return}
   const prev=cargas.filter(c=>c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
   if(prev&&km<=prev.km){err.textContent=`El odómetro (${km}) tiene que ser mayor al de la carga anterior (${prev.km}).`;return}
-  cargas.push({id:Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked});
-  save(); $('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('t2').checked=true; render();
+  cargas.push({id:Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked,est:$('est').value.trim(),...(pos?{lat:pos.lat,lon:pos.lon}:{})});
+  pos=null; $('est').value=''; $('gpsEst').textContent='';
+  save();$('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('t2').checked=true; render();
 });
 $('lista').addEventListener('click',e=>{
   const b=e.target.closest('[data-id]'); if(!b)return;
