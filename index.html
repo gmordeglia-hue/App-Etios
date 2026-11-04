@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1f6f5c">
 <title>Etios - Nafta</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Etios Nafta">
 <style>
   :root{--bg:#f4f6f5;--card:#fff;--ink:#1c2321;--mut:#6a7570;--main:#1f6f5c;--line:#dfe5e2;--bad:#b3261e}
   @media (prefers-color-scheme:dark){:root{--bg:#121715;--card:#1b2220;--ink:#e8eeeb;--mut:#93a09a;--main:#4fb89d;--line:#2c3733;--bad:#f2867e}}
@@ -179,6 +185,7 @@ $('imp').onchange=async e=>{
   e.target.value='';
 };
 $('fh').value=ahora(); render();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
