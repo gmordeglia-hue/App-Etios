@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f6f5c">
+<title>Etios - Nafta</title>
+<style>
+  :root{--bg:#f4f6f5;--card:#fff;--ink:#1c2321;--mut:#6a7570;--main:#1f6f5c;--line:#dfe5e2;--bad:#b3261e}
+  @media (prefers-color-scheme:dark){:root{--bg:#121715;--card:#1b2220;--ink:#e8eeeb;--mut:#93a09a;--main:#4fb89d;--line:#2c3733;--bad:#f2867e}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,Segoe UI,Roboto,sans-serif}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  h1{font-size:22px;margin:4px 0 14px}
+  h2{font-size:16px;margin:0 0 10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{display:block;font-size:13px;color:var(--mut);margin-bottom:3px}
+  input{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+  .full{grid-column:1/-1}
+  .chk{display:flex;gap:8px;align-items:center;font-size:15px;color:var(--ink)}
+  .chk input{width:auto}
+  button{font:inherit;border:0;border-radius:10px;padding:12px 14px;background:var(--main);color:#fff;font-weight:600;cursor:pointer}
+  button.sec{background:transparent;color:var(--main);border:1px solid var(--main);font-weight:500}
+  button.x{background:transparent;color:var(--bad);padding:4px 8px;font-size:18px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:var(--bg);border-radius:10px;padding:10px}
+  .stat b{display:block;font-size:22px}
+  .stat span{font-size:12px;color:var(--mut)}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
+  .row:first-of-type{border-top:0}
+  .row small{color:var(--mut)}
+  .big{font-weight:600}
+  .err{color:var(--bad);font-size:14px;min-height:18px;margin-top:6px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<main>
+  <h1>⛽ Etios · Nafta</h1>
+
+  <div class="card">
+    <h2>Resumen</h2>
+    <div class="stats">
+      <div class="stat"><b id="sCons">—</b><span>L/100 km (promedio)</span></div>
+      <div class="stat"><b id="sKml">—</b><span>km por litro</span></div>
+      <div class="stat"><b id="sCkm">—</b><span>$ por km</span></div>
+      <div class="stat"><b id="sPl">—</b><span>$ por litro (última)</span></div>
+      <div class="stat"><b id="sGasto">—</b><span>Gastado en total</span></div>
+      <div class="stat"><b id="sUlt">—</b><span>Último consumo (L/100 km)</span></div>
+    </div>
+  </div>
+
+  <form class="card" id="f">
+    <h2>Nueva carga</h2>
+    <div class="grid">
+      <div class="full"><label>Fecha y hora (se completa sola)</label><input type="datetime-local" id="fh" required></div>
+      <div><label>Litros</label><input id="lt" inputmode="decimal" placeholder="35,5" required></div>
+      <div><label>Plata gastada ($)</label><input id="pl" inputmode="decimal" placeholder="45000" required></div>
+      <div class="full"><label>Km del odómetro</label><input id="km" inputmode="numeric" placeholder="85230" required></div>
+      <div class="full chk"><input type="checkbox" id="lleno" checked><label for="lleno" style="margin:0;color:inherit">Llené el tanque</label></div>
+      <div class="full"><button type="submit" style="width:100%">Guardar carga</button></div>
+    </div>
+    <div class="err" id="err"></div>
+  </form>
+
+  <div class="card">
+    <h2>Cargas</h2>
+    <div id="lista"></div>
+    <p id="vacio" style="color:var(--mut)">Todavía no hay cargas.</p>
+  </div>
+
+  <div class="card">
+    <h2>Respaldo</h2>
+    <div class="bar">
+      <button class="sec" id="exp">Descargar respaldo</button>
+      <button class="sec" id="impB">Restaurar respaldo</button>
+      <input type="file" id="imp" accept=".json" hidden>
+    </div>
+    <p style="font-size:13px;color:var(--mut);margin-bottom:0">Los datos quedan solo en este aparato. Descargá el respaldo de vez en cuando. Si llenás el tanque siempre, el consumo es más preciso.</p>
+  </div>
+</main>
+
+<script>
+const KEY='etios-nafta-v1';
+let cargas=[];
+try{cargas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){cargas=[]}
+const $=id=>document.getElementById(id);
+const num=s=>parseFloat(String(s).replace(/\./g,'').replace(',','.'));
+const numL=s=>parseFloat(String(s).replace(',','.')); // litros: acepta 35,5 o 35.5
+const fmt=(n,d=1)=>isFinite(n)?n.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const peso=n=>'$ '+Math.round(n).toLocaleString('es-AR');
+function ahora(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cargas))}catch(e){}}
+
+// Consumo por tramo: entre dos cargas "tanque lleno", litros cargados después de la primera (incluida la última) / km recorridos
+function calcular(){
+  const o=[...cargas].sort((a,b)=>a.km-b.km);
+  let ancla=null, litros=0, res=[];
+  o.forEach(c=>{
+    if(ancla) litros+=c.litros;
+    if(c.lleno){
+      if(ancla && c.km>ancla.km){
+        const km=c.km-ancla.km;
+        res.push({id:c.id,km,litros,cons:litros/km*100,plata:null});
+      }
+      ancla=c; litros=0;
+    }
+  });
+  return res;
+}
+
+function render(){
+  cargas.sort((a,b)=>b.fh.localeCompare(a.fh));
+  const tr=calcular(), mapa={}; tr.forEach(t=>mapa[t.id]=t);
+  const L=$('lista'); L.innerHTML='';
+  cargas.forEach(c=>{
+    const d=new Date(c.fh), t=mapa[c.id];
+    const r=document.createElement('div'); r.className='row';
+    r.innerHTML=`<div><span class="big">${d.toLocaleDateString('es-AR')} ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</span><br>
+      <small>${fmt(c.litros)} L · ${peso(c.plata)} · ${fmt(c.plata/c.litros,0)} $/L · ${c.km.toLocaleString('es-AR')} km${c.lleno?'':' · parcial'}</small>
+      ${t?`<br><small><b>${fmt(t.cons)} L/100 km</b> en ${t.km.toLocaleString('es-AR')} km</small>`:''}</div>
+      <button class="x" title="Borrar" data-id="${c.id}">✕</button>`;
+    L.appendChild(r);
+  });
+  $('vacio').style.display=cargas.length?'none':'';
+  // resumen
+  const kmT=tr.reduce((s,t)=>s+t.km,0), ltT=tr.reduce((s,t)=>s+t.litros,0);
+  $('sCons').textContent=kmT?fmt(ltT/kmT*100):'—';
+  $('sKml').textContent=kmT?fmt(kmT/ltT):'—';
+  $('sUlt').textContent=tr.length?fmt(tr[tr.length-1].cons):'—';
+  $('sGasto').textContent=cargas.length?peso(cargas.reduce((s,c)=>s+c.plata,0)):'—';
+  $('sPl').textContent=cargas.length?peso(cargas[0].plata/cargas[0].litros):'—';
+  // $/km: plata de las cargas que entran en tramos / km
+  if(kmT){
+    const o=[...cargas].sort((a,b)=>a.km-b.km); let ancla=null,p=0,tot=0;
+    o.forEach(c=>{if(ancla)p+=c.plata; if(c.lleno){if(ancla&&c.km>ancla.km)tot+=p; ancla=c;p=0}});
+    $('sCkm').textContent=peso(tot/kmT);
+  } else $('sCkm').textContent='—';
+}
+
+$('f').addEventListener('submit',e=>{
+  e.preventDefault();
+  const litros=numL($('lt').value), plata=num($('pl').value), km=num($('km').value), fh=$('fh').value;
+  const err=$('err'); err.textContent='';
+  if(!(litros>0&&plata>0&&km>0&&fh)){err.textContent='Revisá los datos: litros, plata y km tienen que ser números.';return}
+  const prev=cargas.filter(c=>c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
+  if(prev&&km<=prev.km){err.textContent=`El odómetro (${km}) tiene que ser mayor al de la carga anterior (${prev.km}).`;return}
+  cargas.push({id:Date.now().toString(36),fh,litros,plata,km,lleno:$('lleno').checked});
+  save(); $('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; render();
+});
+$('lista').addEventListener('click',e=>{
+  const id=e.target.dataset&&e.target.dataset.id; if(!id)return;
+  if(confirm('¿Borrar esta carga?')){cargas=cargas.filter(c=>c.id!==id);save();render()}
+});
+$('exp').onclick=()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(cargas,null,1)],{type:'application/json'}));
+  a.download='etios-nafta-'+ahora().slice(0,10)+'.json'; a.click();
+};
+$('impB').onclick=()=>$('imp').click();
+$('imp').onchange=async e=>{
+  try{const d=JSON.parse(await e.target.files[0].text());
+    if(!Array.isArray(d))throw 0;
+    if(confirm(`Esto reemplaza las cargas actuales por ${d.length} del respaldo. ¿Seguir?`)){cargas=d;save();render()}
+  }catch(x){alert('Ese archivo no es un respaldo válido.')}
+  e.target.value='';
+};
+$('fh').value=ahora(); render();
+</script>
+</body>
+</html>
