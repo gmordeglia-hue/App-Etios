@@ -26,7 +26,7 @@
     font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     padding-bottom:env(safe-area-inset-bottom)}
   .hero{background:linear-gradient(160deg,#4d5963 0%,#2c333a 100%);color:#fff;
-    padding:calc(env(safe-area-inset-top) + 22px) 20px 78px;}
+    padding:calc(env(safe-area-inset-top) + 18px) 20px 70px;}
   .hero-in{max-width:640px;margin:0 auto}
   .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;opacity:.95}
   .brand img{width:34px;height:34px;border-radius:9px}
@@ -83,6 +83,53 @@
   .vacio span{font-size:34px;display:block;margin-bottom:6px}
   .nota{font-size:12.5px;color:var(--mut);margin:12px 2px 0}
   .bar{display:flex;gap:10px;flex-wrap:wrap}
+  details.card{padding:0}
+  details.card>:not(summary){margin-left:18px;margin-right:18px}
+  details.card>:last-child{margin-bottom:18px}
+  summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:17px 18px;font-weight:700;font-size:16px;user-select:none}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2.5px solid var(--mut);border-bottom:2.5px solid var(--mut);transform:rotate(45deg);transition:transform .2s;flex:none;margin-top:-3px}
+  details[open]>summary::after{transform:rotate(-135deg);margin-top:3px}
+  details.card[open]>summary{padding-bottom:12px}
+  .cnt{font-size:12.5px;font-weight:600;color:var(--mut);background:var(--soft);padding:2px 9px;border-radius:99px}
+  .cnt:empty{display:none}
+  details.sub{background:var(--field);border-radius:13px}
+  details.sub>summary{padding:12px 14px;font-size:14.5px;font-weight:600}
+  details.sub>summary em{font-weight:400;color:var(--mut);font-style:normal;font-size:13px}
+  details.sub>:not(summary){margin:0 14px 14px;width:calc(100% - 28px)}
+  details.sub input{background:var(--card)}
+  .gpsrow{display:flex;gap:10px;align-items:center;margin-top:8px}
+  .gpsrow .sec{flex:none}
+
+  main{padding-bottom:96px}
+  .pane{display:none}.pane.on{display:block;animation:in .25s}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .cnt{font-size:12px;background:var(--soft);padding:2px 8px;border-radius:99px;margin-left:6px;text-transform:none;letter-spacing:0}
+  .cnt:empty{display:none}
+  .lnk{width:100%;margin-top:10px}
+  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;
+    padding:6px 10px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(20,33,29,.08);z-index:5}
+  .tabs button{flex:1;max-width:150px;background:none;color:var(--mut);font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px}
+  .tabs i{font-style:normal;font-size:21px}
+  .tabs button.on{color:var(--main);background:var(--soft)}
+  .tabs .fab i{width:44px;height:44px;margin-top:-22px;border-radius:50%;display:grid;place-items:center;font-size:26px;color:#fff;
+    background:linear-gradient(160deg,var(--main),var(--main2));box-shadow:0 6px 14px rgba(44,51,58,.4)}
+  .tabs .fab{background:none!important}
+  .tabs .fab.on{color:var(--main)}
+  .tipos{display:block}
+  .barra{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:10px;padding:7px 0;font-size:14px;font-weight:600}
+  .barra .tr{height:12px;border-radius:99px;background:var(--soft);overflow:hidden}
+  .barra .tr b{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--main),var(--main2));transition:width .5s}
+  .barra small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}
+  details.sub{background:var(--field);border-radius:13px}
+  details.sub>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:14.5px;font-weight:600}
+  details.sub>summary::-webkit-details-marker{display:none}
+  details.sub>summary em{font-weight:400;color:var(--mut);font-style:normal;font-size:13px}
+  details.sub>:not(summary){margin:0 14px 14px;width:calc(100% - 28px)}
+  details.sub input{background:var(--card)}
+  .gpsrow{display:flex;gap:10px;align-items:center;margin-top:8px}
+  .gpsrow .sec{flex:none}
+  form#f{margin:0}
   @media (max-width:380px){.stat b{font-size:17px}.big-n{font-size:46px}}
 </style>
 </head>
@@ -95,8 +142,8 @@
 </div></header>
 
 <main>
-  <section class="card">
-    <h2>Resumen</h2>
+  <div class="pane" data-tab="inicio">
+    <section class="card"><h2>Resumen</h2>
     <div class="stats">
       <div class="stat"><b id="sKml">—</b><span>km por litro</span></div>
       <div class="stat"><b id="sCkm">—</b><span>costo por km</span></div>
@@ -105,20 +152,14 @@
       <div class="stat" style="grid-column:span 2"><b id="sGasto">—</b><span>gastado en total</span></div>
     </div>
   </section>
-
-  <section class="card">
-    <h2>Según el recorrido · L/100 km</h2>
+    <section class="card"><h2>Según el recorrido · L/100 km</h2>
     <div class="tipos" id="porTipo"></div>
   </section>
-
-  <section class="card">
-    <h2>Estaciones · $ por litro</h2>
-    <div id="estac"></div>
-    <p class="nota" id="estacNota" style="margin-top:6px">Se compara el precio de la última carga en cada estación.</p>
-  </section>
-
-  <form class="card" id="f" autocomplete="off">
-    <h2>Nueva carga</h2>
+    <section class="card"><h2>Últimas cargas</h2><div id="ult"></div>
+      <button class="sec lnk" onclick="ir('historial')">Ver todas →</button></section>
+  </div>
+  <div class="pane" data-tab="cargar"><section class="card"><h2>Nueva carga</h2>
+    <form id="f" autocomplete="off">
     <div class="grid">
       <div class="full"><label class="l">Fecha y hora (se completa sola)</label><input type="datetime-local" id="fh" required></div>
       <div><label class="l">Litros</label><input id="lt" inputmode="decimal" placeholder="35,5" required></div>
@@ -130,27 +171,31 @@
           <input type="radio" name="tipo" id="t2" value="mixto" checked><label for="t2"><span>🔀</span>Mixto</label>
           <input type="radio" name="tipo" id="t3" value="ruta"><label for="t3"><span>🛣️</span>Ruta</label>
         </div></div>
-      <div class="full"><label class="l">Estación de servicio</label>
+      <div class="full"><label class="sw">Llené el tanque<input type="checkbox" id="lleno" checked><i></i></label></div>
+      <details class="full sub" id="d-est">
+        <summary>⛽ Estación de servicio <em>(opcional)</em></summary>
         <input id="est" list="estList" placeholder="Ej: YPF Santa Fe y Scalabrini" maxlength="60">
         <datalist id="estList"></datalist>
-        <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+        <div class="gpsrow">
           <button type="button" class="sec" id="gps">📍 Usar mi ubicación</button>
           <span class="nota" id="gpsEst" style="margin:0"></span>
-        </div></div>
-      <div class="full"><label class="sw">Llené el tanque<input type="checkbox" id="lleno" checked><i></i></label></div>
+        </div>
+      </details>
       <div class="full"><button type="submit" class="go">Guardar carga</button></div>
     </div>
     <div class="err" id="err"></div>
-  </form>
-
-  <section class="card">
-    <h2>Cargas</h2>
+    </form>
+  </section></div>
+  <div class="pane" data-tab="historial"><section class="card"><h2>Cargas <span class="cnt" id="cCargas"></span></h2>
     <div id="lista"></div>
-    <div class="vacio" id="vacio"><span>⛽</span>Todavía no hay cargas.<br>Anotá la primera arriba.</div>
+    <div class="vacio" id="vacio"><span>⛽</span>Todavía no hay cargas.<br>Tocá “Cargar” para anotar la primera.</div>
+  </section></div>
+  <div class="pane" data-tab="mas">
+    <section class="card"><h2>Estaciones · $ por litro</h2>
+    <div id="estac"></div>
+    <p class="nota" id="estacNota" style="margin-top:6px">Se compara el precio de la última carga en cada estación.</p>
   </section>
-
-  <section class="card">
-    <h2>Respaldo</h2>
+    <section class="card"><h2>Respaldo</h2>
     <div class="bar">
       <button class="sec" id="exp">⬇ Descargar respaldo</button>
       <button class="sec" id="impB">⬆ Restaurar</button>
@@ -158,8 +203,14 @@
     </div>
     <p class="nota">Los datos quedan solo en este aparato. Descargá el respaldo de vez en cuando. El consumo se calcula entre cargas de tanque lleno.</p>
   </section>
+  </div>
 </main>
-
+<nav class="tabs">
+  <button data-go="inicio"><i>🏠</i>Inicio</button>
+  <button data-go="cargar" class="fab"><i>＋</i>Cargar</button>
+  <button data-go="historial"><i>🧾</i>Historial</button>
+  <button data-go="mas"><i>⚙️</i>Más</button>
+</nav>
 <script>
 const KEY='etios-nafta-v1';
 const ETQ={ciudad:'Ciudad',mixto:'Mixto',ruta:'Ruta'};
@@ -219,6 +270,7 @@ function render(){
     L.appendChild(r);
   });
   $('vacio').style.display=cargas.length?'none':'';
+  $('cCargas').textContent=cargas.length?cargas.length+(cargas.length===1?' carga':' cargas'):'';
   const kmT=tr.reduce((s,t)=>s+t.km,0), ltT=tr.reduce((s,t)=>s+t.litros,0), plT=tr.reduce((s,t)=>s+t.plata,0);
   $('sCons').textContent=kmT?fmt(ltT/kmT*100):'—';
   $('sKml').textContent=kmT?fmt(kmT/ltT):'—';
@@ -236,10 +288,10 @@ function render(){
     return `<div class="item"><div class="mid"><div class="t1">${esc(s.n)}</div><div class="t2">${new Date(s.fh).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}${dif}</div>${tag}</div><div class="t1">${peso(s.ppl)}<span class="t2">/L</span></div></div>`;
   }).join(''):'<div class="vacio" style="padding:8px 0">Anotá la estación al cargar y acá aparece la comparación.</div>';
   $('estList').innerHTML=est.map(s=>`<option value="${esc(s.n)}">`).join('');
-  $('porTipo').innerHTML=['ciudad','mixto','ruta'].map(k=>{
-    const ts=tr.filter(t=>t.tipo===k), km=ts.reduce((s,t)=>s+t.km,0), lt=ts.reduce((s,t)=>s+t.litros,0);
-    return `<div class="stat"><span class="ic">${ICO[k]}</span><b>${km?fmt(lt/km*100):'—'}</b><span>${ETQ[k]}${km?` · ${km.toLocaleString('es-AR')} km`:''}</span></div>`;
-  }).join('');
+  const dat=['ciudad','mixto','ruta'].map(k=>{const ts=tr.filter(t=>t.tipo===k),km=ts.reduce((s,t)=>s+t.km,0),lt=ts.reduce((s,t)=>s+t.litros,0);return{k,km,v:km?lt/km*100:0}});
+  const mx=Math.max(...dat.map(d=>d.v),1);
+  $('porTipo').innerHTML=dat.map(d=>`<div class="barra"><div>${ICO[d.k]} ${ETQ[d.k]}<small>${d.km?d.km.toLocaleString('es-AR')+' km':'sin datos'}</small></div><div class="tr"><b style="width:${d.v/mx*100}%"></b></div><div>${d.v?fmt(d.v):'—'}</div></div>`).join('');
+  $('ult').innerHTML=$('lista').innerHTML.split('<div class="item">').slice(1,4).map(x=>'<div class="item">'+x.replace(/<button class="x".*?<\/button>/s,'')).join('')||'<div class="vacio" style="padding:8px 0">Todavía no hay cargas.</div>';
 }
 
 $('f').addEventListener('submit',e=>{
@@ -250,8 +302,8 @@ $('f').addEventListener('submit',e=>{
   const prev=cargas.filter(c=>c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
   if(prev&&km<=prev.km){err.textContent=`El odómetro (${km}) tiene que ser mayor al de la carga anterior (${prev.km}).`;return}
   cargas.push({id:Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked,est:$('est').value.trim(),...(pos?{lat:pos.lat,lon:pos.lon}:{})});
-  pos=null; $('est').value=''; $('gpsEst').textContent='';
-  save();$('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('t2').checked=true; render();
+  pos=null; $('est').value=''; $('gpsEst').textContent=''; $('d-est').open=false;
+  save();$('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('t2').checked=true; render(); ir('inicio');
 });
 $('lista').addEventListener('click',e=>{
   const b=e.target.closest('[data-id]'); if(!b)return;
@@ -271,6 +323,11 @@ $('imp').onchange=async e=>{
   e.target.value='';
 };
 $('fh').value=ahora(); render();
+function ir(t){document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.tab===t));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===t));window.scrollTo(0,0);
+  try{localStorage.setItem('etios-tab',t)}catch(e){}}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>ir(b.dataset.go));
+ir('inicio');
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
