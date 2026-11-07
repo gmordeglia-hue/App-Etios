@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2c333a">
+<meta name="theme-color" content="#1E7B4B">
 <title>Etios - Nafta</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -12,115 +12,109 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Etios Nafta">
 <style>
+  /* ===== PALETA =====
+     Una sola paleta, cada color con un trabajo:
+     - acento (verde, distinto al azul de Mis cuentas): botones, pestaña activa, barras, números principales
+     - bien (verde): lo bueno (consumo bajo el promedio, estación más barata)
+     - atención (ámbar): consumo más alto que el promedio, aviso de respaldo
+     - mal (rojo): errores y borrar
+     Todo lo demás son grises azulados neutros. */
   :root{
-    --bg:#eceff1;--card:#ffffff;--ink:#181d21;--mut:#6c767e;--line:#dde2e6;
-    --main:#4d5963;--main2:#2c333a;--soft:#e7ebee;--field:#f3f5f6;--bad:#c0392b;
-    --sh:0 1px 2px rgba(20,33,29,.05),0 6px 18px rgba(20,33,29,.07);
+    --bg:#F0F5F1;--card:#FFFFFF;--ink:#14201A;--mut:#5B6B62;--line:#E1E9E3;
+    --field:#F0F5F1;--soft:#E1F1E7;
+    --ac:#1E7B4B;--ac-d:#155C38;--on:#FFFFFF;
+    --good:#1E7B4B;--good-bg:#1E7B4B;
+    --warn:#8A5A00;--warn-bg:#FCF0D4;
+    --bad:#C93C37;
+    --hero:#1E7B4B;--hero-ink:#FFFFFF;
+    --sh:0 1px 2px rgba(20,32,26,.06),0 4px 14px rgba(20,32,26,.06);
   }
   @media (prefers-color-scheme:dark){:root{
-    --bg:#0f1214;--card:#1a1f23;--ink:#eceff1;--mut:#97a2ab;--line:#2c343a;
-    --main:#b4bec7;--main2:#22282d;--soft:#252c32;--field:#13171a;--bad:#f2867e;
+    --bg:#0c130f;--card:#141d17;--ink:#e6f0e9;--mut:#92a89a;--line:#25342b;
+    --field:#0e1511;--soft:#1a2e22;
+    --ac:#5fd08f;--ac-d:#3fb374;--on:#07230f;
+    --good:#5fd08f;--good-bg:#5fd08f;
+    --warn:#e3b04b;--warn-bg:#35290d;
+    --bad:#f2867e;
+    --hero:#173f29;--hero-ink:#eafaf0;
     --sh:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);}}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:var(--bg);color:var(--ink);
-    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    padding-bottom:env(safe-area-inset-bottom)}
-  .hero{background:linear-gradient(160deg,#4d5963 0%,#2c333a 100%);color:#fff;
-    padding:calc(env(safe-area-inset-top) + 18px) 20px 70px;}
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+
+  .hero{background:var(--hero);color:var(--hero-ink);padding:calc(env(safe-area-inset-top) + 16px) 20px 72px}
   .hero-in{max-width:640px;margin:0 auto}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:17px;opacity:.95}
-  .brand img{width:34px;height:34px;border-radius:9px}
-  .big-n{margin-top:20px;font-size:54px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;opacity:.95}
+  .brand img{width:32px;height:32px;border-radius:9px}
+  .big-n{margin-top:18px;font-size:54px;font-weight:700;letter-spacing:-1.5px;line-height:1}
   .big-n small{font-size:18px;font-weight:500;letter-spacing:0;opacity:.8;margin-left:6px}
   .big-l{margin-top:6px;font-size:14px;opacity:.8}
-  main{max-width:640px;margin:-54px auto 0;padding:0 14px 28px}
+  .big-l b{font-weight:700}
+  main{max-width:640px;margin:-56px auto 0;padding:0 14px 110px}
   .card{background:var(--card);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
-  h2{font-size:13px;margin:0 0 12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+  h2{font-size:12.5px;margin:0 0 12px;color:var(--mut);text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:flex;align-items:center;gap:8px}
+
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .stat{background:var(--soft);border-radius:14px;padding:12px 10px}
-  .stat b{display:block;font-size:19px;font-weight:700;letter-spacing:-.3px;white-space:nowrap}
+  .stat{background:var(--field);border-radius:14px;padding:12px 10px}
+  .stat b{display:block;font-size:19px;font-weight:700;letter-spacing:-.3px;white-space:nowrap;color:var(--ac)}
   .stat span{display:block;font-size:11.5px;color:var(--mut);line-height:1.25;margin-top:2px}
-  .tipos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:0}
-  .tipos .stat{background:var(--field);border:1px solid var(--line)}
-  .tipos .stat .ic{font-size:20px;display:block;margin-bottom:4px}
+
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .full{grid-column:1/-1}
   label.l{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin:0 0 6px 2px}
   input[type=text],input[type=datetime-local],input:not([type]){
     width:100%;font:inherit;font-size:17px;padding:13px 14px;border:1.5px solid transparent;border-radius:13px;
     background:var(--field);color:var(--ink);outline:none;transition:border-color .15s,background .15s;appearance:none;-webkit-appearance:none}
-  input:focus{border-color:var(--main);background:var(--card)}
+  input:focus{border-color:var(--ac);background:var(--card)}
   .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .seg input{position:absolute;opacity:0;pointer-events:none}
   .seg label{display:flex;flex-direction:column;align-items:center;gap:2px;padding:11px 4px;border-radius:13px;
     background:var(--field);border:1.5px solid transparent;font-size:14px;font-weight:600;cursor:pointer;color:var(--mut);transition:all .15s}
   .seg label span{font-size:22px}
-  .seg input:checked+label{background:var(--soft);border-color:var(--main);color:var(--main)}
+  .seg input:checked+label{background:var(--soft);border-color:var(--ac);color:var(--ac)}
+  .seg input:focus-visible+label{outline:2px solid var(--ac);outline-offset:2px}
   .sw{display:flex;align-items:center;justify-content:space-between;background:var(--field);border-radius:13px;padding:12px 14px;font-size:15px;font-weight:500}
   .sw input{position:absolute;opacity:0}
-  .sw i{width:46px;height:28px;border-radius:99px;background:#bcc4ca;position:relative;transition:background .2s;flex:none}
+  .sw i{width:46px;height:28px;border-radius:99px;background:#b5c0c8;position:relative;transition:background .2s;flex:none}
   .sw i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
-  .sw input:checked+i{background:var(--main)}
+  .sw input:checked+i{background:var(--ac)}
   .sw input:checked+i::after{transform:translateX(18px)}
+
   button{font:inherit;border:0;cursor:pointer}
-  .go{width:100%;padding:15px;border-radius:14px;background:linear-gradient(160deg,var(--main),var(--main2));color:#fff;font-size:17px;font-weight:700;
-    box-shadow:0 6px 16px rgba(44,51,58,.38);transition:transform .1s}
+  .go{width:100%;padding:15px;border-radius:14px;background:var(--ac);color:var(--on);font-size:17px;font-weight:700;transition:transform .1s}
   .go:active{transform:scale(.98)}
-  .sec{background:var(--soft);color:var(--main);border-radius:12px;padding:12px 16px;font-weight:600;font-size:14.5px}
+  .sec{background:var(--soft);color:var(--ac);border-radius:12px;padding:12px 16px;font-weight:600;font-size:14.5px}
+  .sec.plain{background:var(--field);color:var(--mut)}
   .err{color:var(--bad);font-size:14px;margin-top:10px;font-weight:500}
   .err:empty{display:none}
+  .prev{font-size:13.5px;color:var(--mut);background:var(--field);border-radius:12px;padding:10px 14px}
+  .prev:empty{display:none}
+  .prev b{color:var(--ink)}
+
   .item{display:flex;gap:12px;align-items:center;padding:13px 0;border-top:1px solid var(--line)}
   .item:first-child{border-top:0;padding-top:2px}
   .chip{width:42px;height:42px;border-radius:13px;background:var(--soft);display:grid;place-items:center;font-size:21px;flex:none}
   .item .mid{flex:1;min-width:0}
   .item .t1{font-weight:650;font-size:15.5px}
   .item .t2{font-size:13px;color:var(--mut)}
-  .badge{display:inline-block;margin-top:5px;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--main);font-size:12.5px;font-weight:700}
+  .item a{color:var(--ac)}
+  .badge{display:inline-block;margin-top:5px;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--ac);font-size:12.5px;font-weight:700}
   .badge.p{background:var(--field);color:var(--mut);font-weight:600}
-  .x{background:none;color:var(--mut);font-size:17px;padding:8px;border-radius:10px;opacity:.6}
+  .badge.good{background:var(--good-bg);color:var(--on)}
+  .badge.warn{background:var(--warn-bg);color:var(--warn)}
+  .acts{display:flex;flex:none}
+  .x{background:none;color:var(--mut);font-size:17px;padding:9px;border-radius:10px;min-width:40px;min-height:40px}
   .x:active{background:var(--field)}
+  .x.del{color:var(--bad)}
   .vacio{text-align:center;color:var(--mut);padding:18px 0 6px}
   .vacio span{font-size:34px;display:block;margin-bottom:6px}
   .nota{font-size:12.5px;color:var(--mut);margin:12px 2px 0}
   .bar{display:flex;gap:10px;flex-wrap:wrap}
-  details.card{padding:0}
-  details.card>:not(summary){margin-left:18px;margin-right:18px}
-  details.card>:last-child{margin-bottom:18px}
-  summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:17px 18px;font-weight:700;font-size:16px;user-select:none}
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2.5px solid var(--mut);border-bottom:2.5px solid var(--mut);transform:rotate(45deg);transition:transform .2s;flex:none;margin-top:-3px}
-  details[open]>summary::after{transform:rotate(-135deg);margin-top:3px}
-  details.card[open]>summary{padding-bottom:12px}
-  .cnt{font-size:12.5px;font-weight:600;color:var(--mut);background:var(--soft);padding:2px 9px;border-radius:99px}
-  .cnt:empty{display:none}
-  details.sub{background:var(--field);border-radius:13px}
-  details.sub>summary{padding:12px 14px;font-size:14.5px;font-weight:600}
-  details.sub>summary em{font-weight:400;color:var(--mut);font-style:normal;font-size:13px}
-  details.sub>:not(summary){margin:0 14px 14px;width:calc(100% - 28px)}
-  details.sub input{background:var(--card)}
-  .gpsrow{display:flex;gap:10px;align-items:center;margin-top:8px}
-  .gpsrow .sec{flex:none}
-
-  main{padding-bottom:96px}
-  .pane{display:none}.pane.on{display:block;animation:in .25s}
-  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .cnt{font-size:12px;background:var(--soft);padding:2px 8px;border-radius:99px;margin-left:6px;text-transform:none;letter-spacing:0}
-  .cnt:empty{display:none}
   .lnk{width:100%;margin-top:10px}
-  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;
-    padding:6px 10px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(20,33,29,.08);z-index:5}
-  .tabs button{flex:1;max-width:150px;background:none;color:var(--mut);font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px}
-  .tabs i{font-style:normal;font-size:21px}
-  .tabs button.on{color:var(--main);background:var(--soft)}
-  .tabs .fab i{width:44px;height:44px;margin-top:-22px;border-radius:50%;display:grid;place-items:center;font-size:26px;color:#fff;
-    background:linear-gradient(160deg,var(--main),var(--main2));box-shadow:0 6px 14px rgba(44,51,58,.4)}
-  .tabs .fab{background:none!important}
-  .tabs .fab.on{color:var(--main)}
-  .tipos{display:block}
-  .barra{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:10px;padding:7px 0;font-size:14px;font-weight:600}
-  .barra .tr{height:12px;border-radius:99px;background:var(--soft);overflow:hidden}
-  .barra .tr b{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--main),var(--main2));transition:width .5s}
-  .barra small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}
+  .aviso{background:var(--warn-bg);color:var(--warn);border-radius:16px;padding:12px 16px;margin-bottom:14px;font-size:14px;font-weight:600;display:flex;gap:10px;align-items:center;justify-content:space-between}
+  .aviso button{background:var(--warn);color:var(--card);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;flex:none}
+  .aviso[hidden]{display:none}
+
   details.sub{background:var(--field);border-radius:13px}
   details.sub>summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:14.5px;font-weight:600}
   details.sub>summary::-webkit-details-marker{display:none}
@@ -129,7 +123,34 @@
   details.sub input{background:var(--card)}
   .gpsrow{display:flex;gap:10px;align-items:center;margin-top:8px}
   .gpsrow .sec{flex:none}
-  form#f{margin:0}
+
+  .pane{display:none}.pane.on{display:block;animation:in .25s}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.pane.on{animation:none}}
+  .cnt{font-size:12px;background:var(--soft);color:var(--ac);padding:2px 8px;border-radius:99px;text-transform:none;letter-spacing:0}
+  .cnt:empty{display:none}
+
+  .tabs{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;
+    padding:6px 10px calc(6px + env(safe-area-inset-bottom));z-index:5}
+  .tabs button{flex:1;max-width:150px;background:none;color:var(--mut);font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;border-radius:12px}
+  .tabs i{font-style:normal;font-size:21px}
+  .tabs button.on{color:var(--ac);background:var(--soft)}
+  .tabs .fab{background:none!important}
+  .tabs .fab i{width:46px;height:46px;margin-top:-24px;border-radius:50%;display:grid;place-items:center;font-size:26px;color:var(--on);background:var(--ac);box-shadow:0 5px 14px rgba(30,123,75,.35)}
+  .tabs .fab.on{color:var(--ac)}
+
+  .barra{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:10px;padding:7px 0;font-size:14px;font-weight:600}
+  .barra .tr{height:12px;border-radius:99px;background:var(--field);overflow:hidden}
+  .barra .tr b{display:block;height:100%;border-radius:99px;background:var(--ac);transition:width .5s}
+  .barra small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}
+
+  .grafico{display:flex;align-items:flex-end;gap:6px;height:130px;padding-top:6px}
+  .grafico .col{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;gap:3px}
+  .grafico .col b{width:100%;border-radius:6px 6px 3px 3px;background:var(--ac);min-height:4px}
+  .grafico .col b.alto{background:var(--warn)}
+  .grafico .col em{font-style:normal;font-size:11px;font-weight:700}
+  .grafico .col small{font-size:10.5px;color:var(--mut)}
+
   @media (max-width:380px){.stat b{font-size:17px}.big-n{font-size:46px}}
 </style>
 </head>
@@ -138,33 +159,41 @@
 <header class="hero"><div class="hero-in">
   <div class="brand"><img src="icon-192.png" alt="">Etios · Nafta</div>
   <div class="big-n"><span id="sCons">—</span><small>L/100 km</small></div>
-  <div class="big-l">Consumo promedio</div>
+  <div class="big-l">Consumo promedio<span id="sAuto"></span></div>
 </div></header>
 
 <main>
   <div class="pane" data-tab="inicio">
+    <div class="aviso" id="avisoResp" hidden><span id="avisoTxt"></span><button type="button" id="avisoBtn">Respaldar</button></div>
     <section class="card"><h2>Resumen</h2>
-    <div class="stats">
-      <div class="stat"><b id="sKml">—</b><span>km por litro</span></div>
-      <div class="stat"><b id="sCkm">—</b><span>costo por km</span></div>
-      <div class="stat"><b id="sUlt">—</b><span>último tramo (L/100)</span></div>
-      <div class="stat"><b id="sPl">—</b><span>precio por litro</span></div>
-      <div class="stat" style="grid-column:span 2"><b id="sGasto">—</b><span>gastado en total</span></div>
-    </div>
-  </section>
+      <div class="stats">
+        <div class="stat"><b id="sKml">—</b><span>km por litro</span></div>
+        <div class="stat"><b id="sCkm">—</b><span>costo por km</span></div>
+        <div class="stat"><b id="sUlt">—</b><span>último tramo (L/100)</span></div>
+        <div class="stat"><b id="sMes">—</b><span>gastado este mes</span></div>
+        <div class="stat"><b id="sPl">—</b><span>precio por litro (última)</span></div>
+        <div class="stat"><b id="sGasto">—</b><span>gastado en total</span></div>
+      </div>
+    </section>
+    <section class="card"><h2>Consumo por tramo · L/100 km</h2>
+      <div id="grafico"></div>
+      <p class="nota" id="grafNota" style="margin-top:8px"></p>
+    </section>
     <section class="card"><h2>Según el recorrido · L/100 km</h2>
-    <div class="tipos" id="porTipo"></div>
-  </section>
+      <div id="porTipo"></div>
+    </section>
     <section class="card"><h2>Últimas cargas</h2><div id="ult"></div>
       <button class="sec lnk" onclick="ir('historial')">Ver todas →</button></section>
   </div>
-  <div class="pane" data-tab="cargar"><section class="card"><h2>Nueva carga</h2>
+
+  <div class="pane" data-tab="cargar"><section class="card"><h2 id="formTit">Nueva carga</h2>
     <form id="f" autocomplete="off">
     <div class="grid">
-      <div class="full"><label class="l">Fecha y hora (se completa sola)</label><input type="datetime-local" id="fh" required></div>
-      <div><label class="l">Litros</label><input id="lt" inputmode="decimal" placeholder="35,5" required></div>
-      <div><label class="l">Plata gastada ($)</label><input id="pl" inputmode="decimal" placeholder="45000" required></div>
-      <div class="full"><label class="l">Km del odómetro</label><input id="km" inputmode="numeric" placeholder="85230" required></div>
+      <div class="full"><label class="l" for="fh">Fecha y hora (se completa sola)</label><input type="datetime-local" id="fh" required></div>
+      <div><label class="l" for="lt">Litros</label><input id="lt" inputmode="decimal" placeholder="35,5" required></div>
+      <div><label class="l" for="pl">Plata gastada ($)</label><input id="pl" inputmode="decimal" placeholder="45000" required></div>
+      <div class="full"><label class="l" for="km">Km del odómetro <span id="kmHint"></span></label><input id="km" inputmode="numeric" placeholder="85230" required></div>
+      <div class="full prev" id="prev"></div>
       <div class="full"><label class="l">¿Cómo fue el recorrido desde la carga anterior?</label>
         <div class="seg">
           <input type="radio" name="tipo" id="t1" value="ciudad"><label for="t1"><span>🏙️</span>Ciudad</label>
@@ -181,49 +210,68 @@
           <span class="nota" id="gpsEst" style="margin:0"></span>
         </div>
       </details>
-      <div class="full"><button type="submit" class="go">Guardar carga</button></div>
+      <div class="full"><button type="submit" class="go" id="btnGuardar">Guardar carga</button></div>
+      <div class="full" id="cancelaWrap" hidden><button type="button" class="sec plain lnk" id="cancelar" style="margin-top:0">Cancelar edición</button></div>
     </div>
     <div class="err" id="err"></div>
     </form>
   </section></div>
+
   <div class="pane" data-tab="historial"><section class="card"><h2>Cargas <span class="cnt" id="cCargas"></span></h2>
     <div id="lista"></div>
     <div class="vacio" id="vacio"><span>⛽</span>Todavía no hay cargas.<br>Tocá “Cargar” para anotar la primera.</div>
   </section></div>
+
   <div class="pane" data-tab="mas">
     <section class="card"><h2>Estaciones · $ por litro</h2>
-    <div id="estac"></div>
-    <p class="nota" id="estacNota" style="margin-top:6px">Se compara el precio de la última carga en cada estación.</p>
-  </section>
+      <div id="estac"></div>
+      <p class="nota" id="estacNota" style="margin-top:6px">Se compara el precio de la última carga en cada estación.</p>
+    </section>
+    <section class="card"><h2>Mi auto</h2>
+      <label class="l" for="tanque">Capacidad del tanque (litros)</label>
+      <input id="tanque" inputmode="decimal" placeholder="45">
+      <p class="nota">Sirve para estimar la autonomía (cuántos km rinde un tanque lleno). El Etios trae 45 L.</p>
+    </section>
     <section class="card"><h2>Respaldo</h2>
-    <div class="bar">
-      <button class="sec" id="exp">⬇ Descargar respaldo</button>
-      <button class="sec" id="impB">⬆ Restaurar</button>
-      <input type="file" id="imp" accept=".json" hidden>
-    </div>
-    <p class="nota">Los datos quedan solo en este aparato. Descargá el respaldo de vez en cuando. El consumo se calcula entre cargas de tanque lleno.</p>
-  </section>
+      <div class="bar">
+        <button class="sec" id="exp">⬇ Descargar respaldo</button>
+        <button class="sec" id="impB">⬆ Restaurar</button>
+        <button class="sec" id="csv">📄 Planilla (Excel)</button>
+        <input type="file" id="imp" accept=".json" hidden>
+      </div>
+      <p class="nota" id="respEstado"></p>
+      <p class="nota">Los datos quedan solo en este aparato. Descargá el respaldo de vez en cuando. El consumo se calcula entre cargas de tanque lleno: la primera carga llena sirve de punto de partida.</p>
+    </section>
   </div>
 </main>
+
 <nav class="tabs">
   <button data-go="inicio"><i>🏠</i>Inicio</button>
   <button data-go="cargar" class="fab"><i>＋</i>Cargar</button>
   <button data-go="historial"><i>🧾</i>Historial</button>
   <button data-go="mas"><i>⚙️</i>Más</button>
 </nav>
+
 <script>
-const KEY='etios-nafta-v1';
+const KEY='etios-nafta-v1', KEYB='etios-backup', KEYT='etios-tanque';
 const ETQ={ciudad:'Ciudad',mixto:'Mixto',ruta:'Ruta'};
 const ICO={ciudad:'🏙️',mixto:'🔀',ruta:'🛣️'};
-let cargas=[];
+let cargas=[], editId=null, pos=null;
 try{cargas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){cargas=[]}
+if(!Array.isArray(cargas))cargas=[];
 const $=id=>document.getElementById(id);
 const num=s=>parseFloat(String(s).replace(/\./g,'').replace(',','.'));
 const numL=s=>parseFloat(String(s).replace(',','.'));
 const fmt=(n,d=1)=>isFinite(n)?n.toLocaleString('es-AR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
 const peso=n=>'$ '+Math.round(n).toLocaleString('es-AR');
 const esc=s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-let pos=null;
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const fdia=fh=>new Date(fh).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+function ahora(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function save(){lsSet(KEY,JSON.stringify(cargas))}
+let tanque=parseFloat(lsGet(KEYT))||45;
+
 $('gps').onclick=()=>{
   const s=$('gpsEst'); s.textContent='Buscando ubicación…';
   if(!navigator.geolocation){s.textContent='Este navegador no da la ubicación. Escribí la estación a mano.';return}
@@ -232,8 +280,6 @@ $('gps').onclick=()=>{
     ()=>{pos=null;s.textContent='No pude tomar la ubicación. Escribí la estación a mano.'},
     {enableHighAccuracy:true,timeout:15000,maximumAge:60000});
 };
-function ahora(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(cargas))}catch(e){}}
 
 // Consumo por tramo: entre dos cargas "tanque lleno", litros cargados después de la primera (incluida la última) / km recorridos
 function calcular(){
@@ -244,7 +290,7 @@ function calcular(){
     if(c.lleno){
       if(ancla && c.km>ancla.km){
         const km=c.km-ancla.km;
-        res.push({id:c.id,km,litros,plata,cons:litros/km*100,tipo:tipos.size===1?[...tipos][0]:'mixto'});
+        res.push({id:c.id,fh:c.fh,km,litros,plata,cons:litros/km*100,tipo:tipos.size===1?[...tipos][0]:'mixto'});
       }
       ancla=c; litros=0; plata=0; tipos=new Set();
     }
@@ -252,82 +298,171 @@ function calcular(){
   return res;
 }
 
+function itemHTML(c,t,prom,acciones){
+  const d=new Date(c.fh), tipo=c.tipo||'mixto';
+  let cls=''; if(t&&prom){cls=t.cons<=prom?'good':t.cons>prom*1.08?'warn':''}
+  return `<div class="item"><div class="chip">${ICO[tipo]}</div>
+    <div class="mid">
+      <div class="t1">${d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})} · ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="t2">${fmt(c.litros)} L · ${peso(c.plata)} · ${c.km.toLocaleString('es-AR')} km</div>
+      ${c.est||c.lat?`<div class="t2">⛽ ${esc(c.est||'Estación')}${c.lat?` · <a href="https://www.google.com/maps?q=${c.lat},${c.lon}" target="_blank" rel="noopener">ver mapa</a>`:''}</div>`:''}
+      ${t?`<span class="badge ${cls}">${fmt(t.cons)} L/100 km · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
+    </div>
+    ${acciones?`<div class="acts"><button class="x" title="Editar" aria-label="Editar" data-edit="${c.id}">✏️</button><button class="x del" title="Borrar" aria-label="Borrar" data-id="${c.id}">✕</button></div>`:''}</div>`;
+}
+
 function render(){
   cargas.sort((a,b)=>b.fh.localeCompare(a.fh));
   const tr=calcular(), mapa={}; tr.forEach(t=>mapa[t.id]=t);
-  const L=$('lista'); L.innerHTML='';
-  cargas.forEach(c=>{
-    const d=new Date(c.fh), t=mapa[c.id], tipo=c.tipo||'mixto';
-    const r=document.createElement('div'); r.className='item';
-    r.innerHTML=`<div class="chip">${ICO[tipo]}</div>
-      <div class="mid">
-        <div class="t1">${d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})} · ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</div>
-        <div class="t2">${fmt(c.litros)} L · ${peso(c.plata)} · ${c.km.toLocaleString('es-AR')} km</div>
-        ${c.est||c.lat?`<div class="t2">⛽ ${esc(c.est||'Estación')}${c.lat?` · <a href="https://www.google.com/maps?q=${c.lat},${c.lon}" target="_blank" rel="noopener" style="color:var(--main)">ver mapa</a>`:''}</div>`:''}
-        ${t?`<span class="badge">${fmt(t.cons)} L/100 km · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
-      </div>
-      <button class="x" title="Borrar" data-id="${c.id}">✕</button>`;
-    L.appendChild(r);
-  });
+  const kmT=tr.reduce((s,t)=>s+t.km,0), ltT=tr.reduce((s,t)=>s+t.litros,0), plT=tr.reduce((s,t)=>s+t.plata,0);
+  const prom=kmT?ltT/kmT*100:0;
+
+  $('lista').innerHTML=cargas.map(c=>itemHTML(c,mapa[c.id],prom,true)).join('');
   $('vacio').style.display=cargas.length?'none':'';
   $('cCargas').textContent=cargas.length?cargas.length+(cargas.length===1?' carga':' cargas'):'';
-  const kmT=tr.reduce((s,t)=>s+t.km,0), ltT=tr.reduce((s,t)=>s+t.litros,0), plT=tr.reduce((s,t)=>s+t.plata,0);
-  $('sCons').textContent=kmT?fmt(ltT/kmT*100):'—';
+  $('ult').innerHTML=cargas.slice(0,3).map(c=>itemHTML(c,mapa[c.id],prom,false)).join('')||'<div class="vacio" style="padding:8px 0">Todavía no hay cargas.</div>';
+
+  $('sCons').textContent=kmT?fmt(prom):'—';
   $('sKml').textContent=kmT?fmt(kmT/ltT):'—';
   $('sCkm').textContent=kmT?peso(plT/kmT):'—';
   $('sUlt').textContent=tr.length?fmt(tr[tr.length-1].cons):'—';
   $('sGasto').textContent=cargas.length?peso(cargas.reduce((s,c)=>s+c.plata,0)):'—';
   $('sPl').textContent=cargas.length?peso(cargas[0].plata/cargas[0].litros):'—';
+  const mes=ahora().slice(0,7);
+  $('sMes').textContent=cargas.length?peso(cargas.filter(c=>c.fh.slice(0,7)===mes).reduce((s,c)=>s+c.plata,0)):'—';
+  $('sAuto').innerHTML=kmT?` · Autonomía ≈ <b>${Math.round(kmT/ltT*tanque/10)*10} km</b>`:'';
+
+  // gráfico: últimos 8 tramos
+  const ult=tr.slice(-8);
+  if(ult.length){
+    const mx=Math.max(...ult.map(t=>t.cons));
+    $('grafico').innerHTML='<div class="grafico">'+ult.map(t=>`<div class="col"><em>${fmt(t.cons)}</em><b class="${t.cons>prom*1.08?'alto':''}" style="height:${Math.max(t.cons/mx*78,4)}%"></b><small>${fdia(t.fh)}</small></div>`).join('')+'</div>';
+    $('grafNota').textContent='Las barras ámbar gastaron más de lo normal (8 % arriba del promedio).';
+  }else{
+    $('grafico').innerHTML='<div class="vacio" style="padding:8px 0">Aparece cuando tengas dos cargas con el tanque lleno.</div>';
+    $('grafNota').textContent='';
+  }
+
   // estaciones: última carga de cada una
   const vistas=new Map();
   cargas.forEach(c=>{const n=(c.est||'').trim(); if(!n)return; const k=n.toLowerCase(); if(!vistas.has(k))vistas.set(k,{n,ppl:c.plata/c.litros,fh:c.fh})});
   const est=[...vistas.values()].sort((a,b)=>a.ppl-b.ppl);
   $('estac').innerHTML=est.length?est.map((s,i)=>{
-    const tag=est.length>1&&i===0?'<span class="badge">💚 Más barata</span>':est.length>1&&i===est.length-1?'<span class="badge p">🔺 Más cara</span>':'';
+    const tag=est.length>1&&i===0?'<span class="badge good">Más barata</span>':est.length>1&&i===est.length-1?'<span class="badge warn">Más cara</span>':'';
     const dif=est.length>1&&i>0?` · +${peso(s.ppl-est[0].ppl)} vs la más barata`:'';
-    return `<div class="item"><div class="mid"><div class="t1">${esc(s.n)}</div><div class="t2">${new Date(s.fh).toLocaleDateString('es-AR',{day:'numeric',month:'short'})}${dif}</div>${tag}</div><div class="t1">${peso(s.ppl)}<span class="t2">/L</span></div></div>`;
+    return `<div class="item"><div class="mid"><div class="t1">${esc(s.n)}</div><div class="t2">${fdia(s.fh)}${dif}</div>${tag}</div><div class="t1">${peso(s.ppl)}<span class="t2">/L</span></div></div>`;
   }).join(''):'<div class="vacio" style="padding:8px 0">Anotá la estación al cargar y acá aparece la comparación.</div>';
   $('estList').innerHTML=est.map(s=>`<option value="${esc(s.n)}">`).join('');
+
   const dat=['ciudad','mixto','ruta'].map(k=>{const ts=tr.filter(t=>t.tipo===k),km=ts.reduce((s,t)=>s+t.km,0),lt=ts.reduce((s,t)=>s+t.litros,0);return{k,km,v:km?lt/km*100:0}});
   const mx=Math.max(...dat.map(d=>d.v),1);
   $('porTipo').innerHTML=dat.map(d=>`<div class="barra"><div>${ICO[d.k]} ${ETQ[d.k]}<small>${d.km?d.km.toLocaleString('es-AR')+' km':'sin datos'}</small></div><div class="tr"><b style="width:${d.v/mx*100}%"></b></div><div>${d.v?fmt(d.v):'—'}</div></div>`).join('');
-  $('ult').innerHTML=$('lista').innerHTML.split('<div class="item">').slice(1,4).map(x=>'<div class="item">'+x.replace(/<button class="x".*?<\/button>/s,'')).join('')||'<div class="vacio" style="padding:8px 0">Todavía no hay cargas.</div>';
+
+  // pista del odómetro y aviso de respaldo
+  $('kmHint').textContent=cargas.length&&!editId?`(última: ${cargas[0].km.toLocaleString('es-AR')})`:'';
+  respaldo();
 }
+
+function respaldo(){
+  const t=parseInt(lsGet(KEYB)||'0'), dias=t?Math.floor((Date.now()-t)/864e5):null;
+  $('respEstado').textContent=t?`Último respaldo: ${dias===0?'hoy':dias===1?'ayer':'hace '+dias+' días'}.`:'Todavía no descargaste ningún respaldo.';
+  const falta=cargas.length>=3&&(t===0||dias>=7);
+  $('avisoResp').hidden=!falta;
+  if(falta)$('avisoTxt').textContent=t?`Hace ${dias} días que no hacés un respaldo.`:'Todavía no hiciste ningún respaldo.';
+}
+
+// Vista previa mientras se escribe
+function previa(){
+  const l=numL($('lt').value), p=num($('pl').value), km=num($('km').value), fh=$('fh').value;
+  const partes=[];
+  if(l>0&&p>0)partes.push(`<b>${peso(p/l)}</b> por litro`);
+  const prev=cargas.filter(c=>c.id!==editId&&c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
+  if(prev&&km>prev.km)partes.push(`<b>${(km-prev.km).toLocaleString('es-AR')} km</b> desde la carga anterior`);
+  $('prev').innerHTML=partes.join(' · ');
+}
+['lt','pl','km','fh'].forEach(i=>$(i).addEventListener('input',previa));
+
+function limpiarForm(){
+  editId=null;pos=null;
+  $('lt').value=$('pl').value=$('km').value=$('est').value='';
+  $('fh').value=ahora();$('lleno').checked=true;$('t2').checked=true;
+  $('gpsEst').textContent='';$('d-est').open=false;$('err').textContent='';
+  $('formTit').textContent='Nueva carga';$('btnGuardar').textContent='Guardar carga';$('cancelaWrap').hidden=true;
+  previa();
+}
+function editar(id){
+  const c=cargas.find(x=>x.id===id); if(!c)return;
+  editId=id;
+  $('fh').value=c.fh;$('lt').value=String(c.litros).replace('.',',');$('pl').value=String(c.plata).replace('.',',');$('km').value=String(c.km);
+  (document.getElementById({ciudad:'t1',mixto:'t2',ruta:'t3'}[c.tipo||'mixto'])).checked=true;
+  $('lleno').checked=!!c.lleno;$('est').value=c.est||'';$('d-est').open=!!(c.est||c.lat);
+  pos=c.lat?{lat:c.lat,lon:c.lon}:null;$('gpsEst').textContent=pos?'✔ Ubicación guardada':'';
+  $('formTit').textContent='Editar carga';$('btnGuardar').textContent='Guardar cambios';$('cancelaWrap').hidden=false;$('kmHint').textContent='';
+  $('err').textContent='';previa();ir('cargar');
+}
+$('cancelar').onclick=()=>{limpiarForm();render();ir('historial')};
 
 $('f').addEventListener('submit',e=>{
   e.preventDefault();
   const litros=numL($('lt').value), plata=num($('pl').value), km=num($('km').value), fh=$('fh').value;
   const err=$('err'); err.textContent='';
   if(!(litros>0&&plata>0&&km>0&&fh)){err.textContent='Revisá los datos: litros, plata y km tienen que ser números.';return}
-  const prev=cargas.filter(c=>c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
-  if(prev&&km<=prev.km){err.textContent=`El odómetro (${km}) tiene que ser mayor al de la carga anterior (${prev.km}).`;return}
-  cargas.push({id:Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked,est:$('est').value.trim(),...(pos?{lat:pos.lat,lon:pos.lon}:{})});
-  pos=null; $('est').value=''; $('gpsEst').textContent=''; $('d-est').open=false;
-  save();$('lt').value=$('pl').value=$('km').value=''; $('fh').value=ahora(); $('lleno').checked=true; $('t2').checked=true; render(); ir('inicio');
+  const otras=cargas.filter(c=>c.id!==editId);
+  const prev=otras.filter(c=>c.fh<fh).sort((a,b)=>b.fh.localeCompare(a.fh))[0];
+  const sig=otras.filter(c=>c.fh>fh).sort((a,b)=>a.fh.localeCompare(b.fh))[0];
+  if(prev&&km<=prev.km){err.textContent=`El odómetro (${km.toLocaleString('es-AR')}) tiene que ser mayor al de la carga anterior (${prev.km.toLocaleString('es-AR')}).`;return}
+  if(sig&&km>=sig.km){err.textContent=`El odómetro (${km.toLocaleString('es-AR')}) tiene que ser menor al de la carga siguiente (${sig.km.toLocaleString('es-AR')}).`;return}
+  if(litros>tanque*1.15&&!confirm(`${fmt(litros)} litros es más que el tanque (${fmt(tanque,0)} L). ¿Está bien?`))return;
+  const nueva={id:editId||Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked,est:$('est').value.trim(),...(pos?{lat:pos.lat,lon:pos.lon}:{})};
+  const antes=editId;
+  cargas=otras.concat(nueva);
+  save();limpiarForm();render();ir(antes?'historial':'inicio');
 });
 $('lista').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-edit]'); if(ed){editar(ed.dataset.edit);return}
   const b=e.target.closest('[data-id]'); if(!b)return;
   if(confirm('¿Borrar esta carga?')){cargas=cargas.filter(c=>c.id!==b.dataset.id);save();render()}
 });
-$('exp').onclick=()=>{
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([JSON.stringify(cargas,null,1)],{type:'application/json'}));
-  a.download='etios-nafta-'+ahora().slice(0,10)+'.json'; a.click();
+
+function bajar(blob,nombre){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+function hacerRespaldo(){
+  bajar(new Blob([JSON.stringify(cargas,null,1)],{type:'application/json'}),'etios-nafta-'+ahora().slice(0,10)+'.json');
+  lsSet(KEYB,String(Date.now()));respaldo();
+}
+$('exp').onclick=hacerRespaldo;
+$('avisoBtn').onclick=hacerRespaldo;
+$('csv').onclick=()=>{
+  const f=[['Fecha','Litros','Plata','Km','Recorrido','Tanque lleno','Estación']];
+  [...cargas].sort((a,b)=>a.fh.localeCompare(b.fh)).forEach(c=>f.push([c.fh.replace('T',' '),String(c.litros).replace('.',','),String(c.plata).replace('.',','),c.km,ETQ[c.tipo||'mixto'],c.lleno?'sí':'no',(c.est||'').replace(/;/g,',')]));
+  bajar(new Blob(['﻿'+f.map(r=>r.join(';')).join('\r\n')],{type:'text/csv'}),'etios-nafta-'+ahora().slice(0,10)+'.csv');
 };
 $('impB').onclick=()=>$('imp').click();
 $('imp').onchange=async e=>{
-  try{const d=JSON.parse(await e.target.files[0].text());
-    if(!Array.isArray(d))throw 0;
+  try{
+    const d=JSON.parse(await e.target.files[0].text());
+    const ok=Array.isArray(d)&&d.every(c=>c&&typeof c.fh==='string'&&c.litros>0&&c.plata>0&&c.km>0);
+    if(!ok)throw 0;
+    d.forEach((c,i)=>{if(!c.id)c.id=Date.now().toString(36)+i});
     if(confirm(`Esto reemplaza las cargas actuales por ${d.length} del respaldo. ¿Seguir?`)){cargas=d;save();render()}
   }catch(x){alert('Ese archivo no es un respaldo válido.')}
   e.target.value='';
 };
-$('fh').value=ahora(); render();
+$('tanque').value=String(tanque).replace('.',',');
+$('tanque').addEventListener('change',()=>{const v=numL($('tanque').value);if(v>10&&v<200){tanque=v;lsSet(KEYT,String(v))}$('tanque').value=String(tanque).replace('.',',');render()});
+
 function ir(t){document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.tab===t));
-  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===t));window.scrollTo(0,0);
-  try{localStorage.setItem('etios-tab',t)}catch(e){}}
-document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>ir(b.dataset.go));
-ir('inicio');
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===t));window.scrollTo(0,0)}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{if(b.dataset.go==='cargar'&&editId)limpiarForm();ir(b.dataset.go)});
+// Respaldo automático: si pasaron 7 días, se descarga solo al primer toque (los navegadores no dejan descargar sin que uno toque).
+function armAutoBackup(){
+  const go=()=>{document.removeEventListener('pointerdown',go,true);
+    const t=parseInt(lsGet(KEYB)||'0');
+    if(cargas.length>=3&&(!t||Date.now()-t>=7*864e5))hacerRespaldo()};
+  document.addEventListener('pointerdown',go,true);
+}
+armAutoBackup();
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+$('fh').value=ahora(); render(); ir('inicio');
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
