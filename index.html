@@ -151,6 +151,13 @@
   .grafico .col em{font-style:normal;font-size:11px;font-weight:700}
   .grafico .col small{font-size:10.5px;color:var(--mut)}
 
+  select{width:100%;font:inherit;font-size:17px;padding:13px 14px;border:1.5px solid transparent;border-radius:13px;background:var(--card);color:var(--ink);outline:none}
+  select:focus{border-color:var(--ac)}
+  label.sec.foto{display:block;text-align:center;cursor:pointer}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));max-width:90%;background:var(--ink);color:var(--bg);
+    padding:12px 16px;border-radius:14px;font-size:14px;font-weight:600;z-index:9;box-shadow:var(--sh);text-align:center}
+  .toast[hidden]{display:none}
+
   @media (max-width:380px){.stat b{font-size:17px}.big-n{font-size:46px}}
 </style>
 </head>
@@ -178,6 +185,10 @@
     <section class="card"><h2>Consumo por tramo · L/100 km</h2>
       <div id="grafico"></div>
       <p class="nota" id="grafNota" style="margin-top:8px"></p>
+    </section>
+    <section class="card" id="cardCmp" hidden><h2>Computadora vs. real · L/100 km</h2>
+      <div id="cmp"></div>
+      <p class="nota" id="cmpNota"></p>
     </section>
     <section class="card"><h2>Según el recorrido · L/100 km</h2>
       <div id="porTipo"></div>
@@ -209,6 +220,20 @@
           <button type="button" class="sec" id="gps">📍 Usar mi ubicación</button>
           <span class="nota" id="gpsEst" style="margin:0"></span>
         </div>
+      </details>
+      <details class="full sub" id="d-comp">
+        <summary>🖥️ Computadora de abordo <em>(opcional)</em></summary>
+        <label class="sec foto" for="foto">📷 Sacar foto al tablero</label>
+        <input type="file" id="foto" accept="image/*" capture="environment" hidden>
+        <p class="nota" id="fotoEst" style="margin:8px 0 0">La app lee el odómetro y los datos de la pantalla. La foto no se guarda: se lee y se descarta.</p>
+        <div class="grid" style="margin-top:12px">
+          <div class="full"><label class="l" for="cPant">Pantalla que se ve</label>
+            <select id="cPant"><option value="reinicio">Desde Reinicio</option><option value="inicio">Desde Inicio</option></select></div>
+          <div><label class="l" for="cKml">Consumo prom. (km/L)</label><input id="cKml" inputmode="decimal" placeholder="12,4"></div>
+          <div><label class="l" for="cVel">Velocidad prom. (km/h)</label><input id="cVel" inputmode="decimal" placeholder="38"></div>
+          <div class="full"><label class="l" for="cTiempo">Tiempo (horas:minutos)</label><input id="cTiempo" inputmode="numeric" placeholder="05:42" maxlength="6"></div>
+        </div>
+        <p class="nota" style="margin:8px 0 0">El odómetro se completa arriba, en “Km del odómetro”. Después de guardar, poné en cero “Reinicio” en el tablero.</p>
       </details>
       <div class="full"><button type="submit" class="go" id="btnGuardar">Guardar carga</button></div>
       <div class="full" id="cancelaWrap" hidden><button type="button" class="sec plain lnk" id="cancelar" style="margin-top:0">Cancelar edición</button></div>
@@ -245,6 +270,7 @@
   </div>
 </main>
 
+<div class="toast" id="toast" hidden></div>
 <nav class="tabs">
   <button data-go="inicio"><i>🏠</i>Inicio</button>
   <button data-go="cargar" class="fab"><i>＋</i>Cargar</button>
@@ -306,6 +332,7 @@ function itemHTML(c,t,prom,acciones){
       <div class="t1">${d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})} · ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</div>
       <div class="t2">${fmt(c.litros)} L · ${peso(c.plata)} · ${c.km.toLocaleString('es-AR')} km</div>
       ${c.est||c.lat?`<div class="t2">⛽ ${esc(c.est||'Estación')}${c.lat?` · <a href="https://www.google.com/maps?q=${c.lat},${c.lon}" target="_blank" rel="noopener">ver mapa</a>`:''}</div>`:''}
+      ${c.comp&&c.comp.kml>0?`<div class="t2">🖥️ Compu (${c.comp.pant==='inicio'?'Inicio':'Reinicio'}): ${fmt(c.comp.kml)} km/L · ${fmt(100/c.comp.kml)} L/100 km</div>`:''}
       ${t?`<span class="badge ${cls}">${fmt(t.cons)} L/100 km · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
     </div>
     ${acciones?`<div class="acts"><button class="x" title="Editar" aria-label="Editar" data-edit="${c.id}">✏️</button><button class="x del" title="Borrar" aria-label="Borrar" data-id="${c.id}">✕</button></div>`:''}</div>`;
@@ -341,6 +368,15 @@ function render(){
   }else{
     $('grafico').innerHTML='<div class="vacio" style="padding:8px 0">Aparece cuando tengas dos cargas con el tanque lleno.</div>';
     $('grafNota').textContent='';
+  }
+
+  // computadora vs real: solo tramos donde la carga trae lectura de "Reinicio"
+  const cmp=tr.map(t=>{const c=cargas.find(x=>x.id===t.id);return c&&c.comp&&c.comp.pant==='reinicio'&&c.comp.kml>0?{fh:t.fh,real:t.cons,compu:100/c.comp.kml}:null}).filter(Boolean);
+  $('cardCmp').hidden=!cmp.length;
+  if(cmp.length){
+    const dif=cmp.reduce((s,x)=>s+(x.compu/x.real-1),0)/cmp.length*100;
+    $('cmp').innerHTML=cmp.slice(-5).reverse().map(x=>`<div class="item"><div class="mid"><div class="t1">${fdia(x.fh)}</div><div class="t2">Real ${fmt(x.real)} · Computadora ${fmt(x.compu)}</div></div><div class="t1">${x.compu<=x.real?'':'+'}${fmt((x.compu/x.real-1)*100)} %</div></div>`).join('');
+    $('cmpNota').textContent=Math.abs(dif)<0.5?'La computadora marca casi igual que el consumo real.':`En promedio la computadora marca ${fmt(Math.abs(dif))} % ${dif<0?'menos':'más'} consumo que el real. Vale si pusiste “Reinicio” en cero en la carga anterior.`;
   }
 
   // estaciones: última carga de cada una
@@ -387,6 +423,7 @@ function limpiarForm(){
   $('lt').value=$('pl').value=$('km').value=$('est').value='';
   $('fh').value=ahora();$('lleno').checked=true;$('t2').checked=true;
   $('gpsEst').textContent='';$('d-est').open=false;$('err').textContent='';
+  $('cKml').value=$('cVel').value=$('cTiempo').value='';$('cPant').value='reinicio';$('d-comp').open=false;$('fotoEst').textContent=FOTO_AYUDA;
   $('formTit').textContent='Nueva carga';$('btnGuardar').textContent='Guardar carga';$('cancelaWrap').hidden=true;
   previa();
 }
@@ -397,6 +434,9 @@ function editar(id){
   (document.getElementById({ciudad:'t1',mixto:'t2',ruta:'t3'}[c.tipo||'mixto'])).checked=true;
   $('lleno').checked=!!c.lleno;$('est').value=c.est||'';$('d-est').open=!!(c.est||c.lat);
   pos=c.lat?{lat:c.lat,lon:c.lon}:null;$('gpsEst').textContent=pos?'✔ Ubicación guardada':'';
+  const k=c.comp||{};
+  $('cPant').value=k.pant||'reinicio';$('cKml').value=k.kml?String(k.kml).replace('.',','):'';$('cVel').value=k.vel!=null?String(k.vel).replace('.',','):'';$('cTiempo').value=k.tiempo||'';
+  $('d-comp').open=!!c.comp;$('fotoEst').textContent=FOTO_AYUDA;
   $('formTit').textContent='Editar carga';$('btnGuardar').textContent='Guardar cambios';$('cancelaWrap').hidden=false;$('kmHint').textContent='';
   $('err').textContent='';previa();ir('cargar');
 }
@@ -413,10 +453,13 @@ $('f').addEventListener('submit',e=>{
   if(prev&&km<=prev.km){err.textContent=`El odómetro (${km.toLocaleString('es-AR')}) tiene que ser mayor al de la carga anterior (${prev.km.toLocaleString('es-AR')}).`;return}
   if(sig&&km>=sig.km){err.textContent=`El odómetro (${km.toLocaleString('es-AR')}) tiene que ser menor al de la carga siguiente (${sig.km.toLocaleString('es-AR')}).`;return}
   if(litros>tanque*1.15&&!confirm(`${fmt(litros)} litros es más que el tanque (${fmt(tanque,0)} L). ¿Está bien?`))return;
-  const nueva={id:editId||Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked,est:$('est').value.trim(),...(pos?{lat:pos.lat,lon:pos.lon}:{})};
+  const kml=numL($('cKml').value), vel=numL($('cVel').value), tiempo=$('cTiempo').value.trim();
+  const comp=(kml>0||$('cVel').value.trim()||tiempo)?{pant:$('cPant').value,...(kml>0?{kml}:{}),...($('cVel').value.trim()&&vel>=0?{vel}:{}),...(tiempo?{tiempo}:{})}:null;
+  const nueva={id:editId||Date.now().toString(36),fh,litros,plata,km,tipo:document.querySelector('input[name=tipo]:checked').value,lleno:$('lleno').checked,est:$('est').value.trim(),...(pos?{lat:pos.lat,lon:pos.lon}:{}),...(comp?{comp}:{})};
   const antes=editId;
   cargas=otras.concat(nueva);
   save();limpiarForm();render();ir(antes?'historial':'inicio');
+  if(comp&&comp.pant==='reinicio'&&!antes)toast('Guardado. Acordate de poner en cero “Reinicio” en el tablero.');
 });
 $('lista').addEventListener('click',e=>{
   const ed=e.target.closest('[data-edit]'); if(ed){editar(ed.dataset.edit);return}
@@ -432,8 +475,8 @@ function hacerRespaldo(){
 $('exp').onclick=hacerRespaldo;
 $('avisoBtn').onclick=hacerRespaldo;
 $('csv').onclick=()=>{
-  const f=[['Fecha','Litros','Plata','Km','Recorrido','Tanque lleno','Estación']];
-  [...cargas].sort((a,b)=>a.fh.localeCompare(b.fh)).forEach(c=>f.push([c.fh.replace('T',' '),String(c.litros).replace('.',','),String(c.plata).replace('.',','),c.km,ETQ[c.tipo||'mixto'],c.lleno?'sí':'no',(c.est||'').replace(/;/g,',')]));
+  const f=[['Fecha','Litros','Plata','Km','Recorrido','Tanque lleno','Estación','Compu pantalla','Compu km/L','Compu km/h','Compu tiempo']];
+  [...cargas].sort((a,b)=>a.fh.localeCompare(b.fh)).forEach(c=>{const k=c.comp||{};f.push([c.fh.replace('T',' '),String(c.litros).replace('.',','),String(c.plata).replace('.',','),c.km,ETQ[c.tipo||'mixto'],c.lleno?'sí':'no',(c.est||'').replace(/;/g,','),k.pant||'',k.kml!=null?String(k.kml).replace('.',','):'',k.vel!=null?String(k.vel).replace('.',','):'',k.tiempo||''])});
   bajar(new Blob(['﻿'+f.map(r=>r.join(';')).join('\r\n')],{type:'text/csv'}),'etios-nafta-'+ahora().slice(0,10)+'.csv');
 };
 $('impB').onclick=()=>$('imp').click();
@@ -449,6 +492,123 @@ $('imp').onchange=async e=>{
 };
 $('tanque').value=String(tanque).replace('.',',');
 $('tanque').addEventListener('change',()=>{const v=numL($('tanque').value);if(v>10&&v<200){tanque=v;lsSet(KEYT,String(v))}$('tanque').value=String(tanque).replace('.',',');render()});
+
+function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>{e.hidden=true},6000)}
+
+// ===== Lector del tablero: lee la foto en el celular (OCR), no la guarda ni la manda a ningún lado =====
+// La librería de lectura (Tesseract.js) se baja una sola vez, la primera vez que se usa, y queda guardada para usar sin internet.
+const FOTO_AYUDA='La app lee el odómetro y los datos de la pantalla. La foto no se guarda: se lee y se descarta.';
+const TESS_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+let tessP=null, ocrW=null, ocrProg=null;
+function cargarTess(){
+  if(window.Tesseract)return Promise.resolve();
+  if(!tessP)tessP=new Promise((ok,mal)=>{const s=document.createElement('script');s.src=TESS_URL;s.onload=ok;s.onerror=()=>{tessP=null;mal(new Error('sin lector'))};document.head.appendChild(s)});
+  return tessP;
+}
+async function obtenerOcr(){
+  await cargarTess();
+  if(!ocrW)ocrW=await Tesseract.createWorker('eng',1,{logger:m=>{if(ocrProg&&m.status)ocrProg(m)}});
+  return ocrW;
+}
+async function cargarImg(f){
+  try{return await createImageBitmap(f,{imageOrientation:'from-image'})}catch(e){}
+  const u=URL.createObjectURL(f);
+  try{const i=new Image();i.src=u;await i.decode();return i}finally{setTimeout(()=>URL.revokeObjectURL(u),3000)}
+}
+// Recorta, agranda, pasa a grises, invierte (el tablero es texto claro sobre fondo oscuro) y estira el contraste.
+function prepCanvas(src,sx,sy,sw,sh,tw){
+  const sc=tw/sw, c=document.createElement('canvas');
+  c.width=Math.max(1,Math.round(sw*sc)); c.height=Math.max(1,Math.round(sh*sc));
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.imageSmoothingQuality='high'; x.drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);
+  const im=x.getImageData(0,0,c.width,c.height), d=im.data, n=c.width*c.height, g=new Uint8Array(n), h=new Uint32Array(256);
+  for(let i=0;i<n;i++){const v=(d[i*4]*.299+d[i*4+1]*.587+d[i*4+2]*.114)|0;g[i]=v;h[v]++}
+  let lo=0,hi=255,a=0; while(lo<255&&(a+=h[lo])<n*.01)lo++; a=0; while(hi>0&&(a+=h[hi])<n*.01)hi--;
+  const r=Math.max(hi-lo,1);
+  for(let i=0;i<n;i++){const v=255-Math.min(255,Math.max(0,(g[i]-lo)*255/r));d[i*4]=d[i*4+1]=d[i*4+2]=v;d[i*4+3]=255}
+  x.putImageData(im,0,0); return c;
+}
+function parsePanel(t){
+  const o={}, L=t.split(/\n/).map(s=>s.trim()).filter(Boolean);
+  if(/reinic/i.test(t))o.pant='reinicio'; else if(/inicio/i.test(t))o.pant='inicio';
+  for(const s of L){
+    const v=s.replace(/^[^\d]*/,'');
+    if(/tiem/i.test(s)){const m=s.match(/(\d{1,2})\s*[:.;,]\s*(\d{2})/);if(m)o.tiempo=m[1].padStart(2,'0')+':'+m[2]}
+    else if(/velo/i.test(s)){const m=v.match(/^(\d{1,3})/);if(m&&+m[1]<=200)o.vel=+m[1]}
+    else if(/cons/i.test(s)){
+      let m=v.match(/^(\d{1,3})\s*[.,]\s*(\d)/), n=m?parseFloat(m[1]+'.'+m[2]):null;
+      if(n==null){const d=v.match(/^(\d{2,3})(?!\d)/);if(d)n=parseFloat(d[1].slice(0,-1)+'.'+d[1].slice(-1))} // 24 → 2,4 si el punto no se leyó
+      if(n>0&&/100/.test(s))n=100/n; // si el tablero estuviera en L/100 km
+      if(n>=1&&n<=40)o.kml=Math.round(n*10)/10;
+    }
+  }
+  return o;
+}
+async function leerTablero(f,prog){
+  ocrProg=prog;
+  const w=await obtenerOcr(), bm=await cargarImg(f), W=bm.width||bm.naturalWidth, H=bm.height||bm.naturalHeight;
+  const out={}, sc1=1600/W;
+  try{
+    // 1) toda la foto: ubica las etiquetas y busca el número del odómetro
+    await w.setParameters({tessedit_pageseg_mode:'11',tessedit_char_whitelist:''});
+    const c1=prepCanvas(bm,0,0,W,H,1600), r1=(await w.recognize(c1)).data, ws=r1.words||[];
+    const limpio=t=>t.replace(/[^A-Za-zÁÉÍÓÚáéíóú]/g,'');
+    const anc=ws.filter(x=>/^(cons|velo|tiem|desd)/i.test(limpio(x.text))&&limpio(x.text).length>=4);
+    let px0,py0,px1,py1;
+    if(anc.length>=2){
+      const ux0=Math.min(...anc.map(x=>x.bbox.x0)),ux1=Math.max(...anc.map(x=>x.bbox.x1)),uy0=Math.min(...anc.map(x=>x.bbox.y0)),uy1=Math.max(...anc.map(x=>x.bbox.y1));
+      const uw=ux1-ux0, rh=anc.map(x=>x.bbox.y1-x.bbox.y0).sort((a,b)=>a-b)[anc.length>>1];
+      px0=Math.max(0,ux0-.15*uw);px1=Math.min(c1.width,ux1+1.7*uw);py0=Math.max(0,uy0-1.2*rh);py1=Math.min(c1.height,uy1+1.2*rh);
+    }else{px0=c1.width*.45;px1=c1.width;py0=0;py1=c1.height}
+    // 2) panel de datos, agrandado
+    const sx=px0/sc1,sy=py0/sc1,sw=(px1-px0)/sc1,sh=(py1-py0)/sc1;
+    await w.setParameters({tessedit_pageseg_mode:'6'});
+    const c2=prepCanvas(bm,sx,sy,sw,sh,1100), r2=(await w.recognize(c2)).data;
+    Object.assign(out,parsePanel(r2.text||''));
+    // segunda lectura solo del valor de cada fila (más grande y solo números): corrige confusiones como 4 ↔ 9
+    const fila=async(re,carac)=>{
+      const e=(r2.words||[]).find(x=>re.test(limpio(x.text))&&limpio(x.text).length>=4); if(!e)return null;
+      const bb=e.bbox, h=bb.y1-bb.y0, x0=Math.min(c2.width-2,bb.x1+.3*h), y0=Math.max(0,bb.y0-.25*h), ww=c2.width-x0, hh=Math.min(c2.height,bb.y1+.25*h)-y0;
+      if(ww<10||hh<5)return null;
+      await w.setParameters({tessedit_pageseg_mode:'7',tessedit_char_whitelist:carac});
+      return ((await w.recognize(prepCanvas(c2,x0,y0,ww,hh,Math.min(1400,ww*2.5)))).data.text||'').trim();
+    };
+    const tc=await fila(/^cons/i,'0123456789.,');
+    const mc=tc&&tc.match(/^(\d{1,2})\s*[.,]\s*(\d)/); if(mc){const n=parseFloat(mc[1]+'.'+mc[2]);if(n>=1&&n<=40)out.kml=n}
+    const tv=await fila(/^velo/i,'0123456789');
+    const mv=tv&&tv.match(/^(\d{1,3})/); if(mv&&+mv[1]<=200)out.vel=+mv[1];
+    // 3) odómetro: número de 5-6 dígitos fuera del panel; se vuelve a leer en un recorte ajustado
+    const fuera=x=>x.bbox.x1<px0||x.bbox.x0>px1||x.bbox.y1<py0||x.bbox.y0>py1;
+    const cand=ws.map(x=>({x,d:x.text.replace(/\D/g,'')})).filter(o=>o.d.length>=5&&o.d.length<=6&&o.d.length>=o.x.text.replace(/\s/g,'').length*.7&&fuera(o.x)).sort((a,b)=>b.x.confidence-a.x.confidence)[0];
+    if(cand){
+      out.odo=cand.d;
+      const b=cand.x.bbox, h=b.y1-b.y0, x0=Math.max(0,b.x0-.4*h)/sc1, y0=Math.max(0,b.y0-.6*h)/sc1, ww=Math.min(c1.width,b.x1+.15*h)/sc1-x0, hh=Math.min(c1.height,b.y1+.6*h)/sc1-y0;
+      await w.setParameters({tessedit_pageseg_mode:'7',tessedit_char_whitelist:'0123456789'});
+      const r3=(await w.recognize(prepCanvas(bm,x0,y0,ww,hh,Math.min(900,Math.max(400,ww*4))))).data;
+      const d3=(r3.text||'').replace(/\D/g,'');
+      if(d3.length>=5&&d3.length<=6)out.odo=d3;
+    }
+  }finally{ocrProg=null;if(bm.close)bm.close()}
+  return out;
+}
+$('foto').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f)return;
+  const est=$('fotoEst'); $('d-comp').open=true;
+  est.textContent='Preparando el lector…';
+  try{
+    const r=await leerTablero(f,m=>{est.textContent=/load|init/i.test(m.status)?'Descargando el lector (solo la primera vez, necesita internet)…':'Leyendo la foto… '+Math.round((m.progress||0)*100)+' %'});
+    const dicho=[];
+    if(r.odo){$('km').value=r.odo;previa();dicho.push(`odómetro ${(+r.odo).toLocaleString('es-AR')} km`)}
+    if(r.pant)$('cPant').value=r.pant;
+    if(r.kml){$('cKml').value=String(r.kml).replace('.',',');dicho.push(`consumo ${fmt(r.kml)} km/L`)}
+    if(r.vel!=null){$('cVel').value=String(r.vel);dicho.push(`velocidad ${r.vel} km/h`)}
+    if(r.tiempo){$('cTiempo').value=r.tiempo;dicho.push(`tiempo ${r.tiempo}`)}
+    const falta=[!r.odo&&'odómetro',!r.kml&&'consumo',r.vel==null&&'velocidad',!r.tiempo&&'tiempo'].filter(Boolean);
+    est.textContent=(dicho.length?'Leí: '+dicho.join(' · ')+(r.pant?` (pantalla “Desde ${r.pant==='reinicio'?'Reinicio':'Inicio'}”)`:'')+'. Revisá que estén bien. ':'No pude leer nada de la foto. ')+(falta.length?'No leí: '+falta.join(', ')+', completalo a mano. ':'')+'La foto no se guardó.';
+  }catch(x){
+    est.textContent=window.Tesseract?'No pude leer la foto. Probá con más luz o más cerca, o cargá los datos a mano.':'No pude bajar el lector. La primera vez necesita internet. Cargá los datos a mano.';
+  }
+};
 
 function ir(t){document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.tab===t));
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===t));window.scrollTo(0,0)}
