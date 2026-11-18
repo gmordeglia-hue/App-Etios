@@ -165,7 +165,7 @@
 
 <header class="hero"><div class="hero-in">
   <div class="brand"><img src="icon-192.png" alt="">Etios · Nafta</div>
-  <div class="big-n"><span id="sCons">—</span><small>L/100 km</small></div>
+  <div class="big-n"><span id="sCons">—</span><small>km/L</small></div>
   <div class="big-l">Consumo promedio<span id="sAuto"></span></div>
 </div></header>
 
@@ -174,23 +174,23 @@
     <div class="aviso" id="avisoResp" hidden><span id="avisoTxt"></span><button type="button" id="avisoBtn">Respaldar</button></div>
     <section class="card"><h2>Resumen</h2>
       <div class="stats">
-        <div class="stat"><b id="sKml">—</b><span>km por litro</span></div>
+        <div class="stat"><b id="sKml">—</b><span>km medidos en tramos</span></div>
         <div class="stat"><b id="sCkm">—</b><span>costo por km</span></div>
-        <div class="stat"><b id="sUlt">—</b><span>último tramo (L/100)</span></div>
+        <div class="stat"><b id="sUlt">—</b><span>último tramo (km/L)</span></div>
         <div class="stat"><b id="sMes">—</b><span>gastado este mes</span></div>
         <div class="stat"><b id="sPl">—</b><span>precio por litro (última)</span></div>
         <div class="stat"><b id="sGasto">—</b><span>gastado en total</span></div>
       </div>
     </section>
-    <section class="card"><h2>Consumo por tramo · L/100 km</h2>
+    <section class="card"><h2>Consumo por tramo · km/L</h2>
       <div id="grafico"></div>
       <p class="nota" id="grafNota" style="margin-top:8px"></p>
     </section>
-    <section class="card" id="cardCmp" hidden><h2>Computadora vs. real · L/100 km</h2>
+    <section class="card" id="cardCmp" hidden><h2>Computadora vs. real · km/L</h2>
       <div id="cmp"></div>
       <p class="nota" id="cmpNota"></p>
     </section>
-    <section class="card"><h2>Según el recorrido · L/100 km</h2>
+    <section class="card"><h2>Según el recorrido · km/L</h2>
       <div id="porTipo"></div>
     </section>
     <section class="card"><h2>Últimas cargas</h2><div id="ult"></div>
@@ -332,8 +332,8 @@ function itemHTML(c,t,prom,acciones){
       <div class="t1">${d.toLocaleDateString('es-AR',{day:'numeric',month:'short'})} · ${d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</div>
       <div class="t2">${fmt(c.litros)} L · ${peso(c.plata)} · ${c.km.toLocaleString('es-AR')} km</div>
       ${c.est||c.lat?`<div class="t2">⛽ ${esc(c.est||'Estación')}${c.lat?` · <a href="https://www.google.com/maps?q=${c.lat},${c.lon}" target="_blank" rel="noopener">ver mapa</a>`:''}</div>`:''}
-      ${c.comp&&c.comp.kml>0?`<div class="t2">🖥️ Compu (${c.comp.pant==='inicio'?'Inicio':'Reinicio'}): ${fmt(c.comp.kml)} km/L · ${fmt(100/c.comp.kml)} L/100 km</div>`:''}
-      ${t?`<span class="badge ${cls}">${fmt(t.cons)} L/100 km · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
+      ${c.comp&&c.comp.kml>0?`<div class="t2">🖥️ Compu (${c.comp.pant==='inicio'?'Inicio':'Reinicio'}): ${fmt(c.comp.kml)} km/L</div>`:''}
+      ${t?`<span class="badge ${cls}">${fmt(100/t.cons)} km/L · ${ETQ[t.tipo]}</span>`:''}${c.lleno?'':` <span class="badge p">parcial</span>`}
     </div>
     ${acciones?`<div class="acts"><button class="x" title="Editar" aria-label="Editar" data-edit="${c.id}">✏️</button><button class="x del" title="Borrar" aria-label="Borrar" data-id="${c.id}">✕</button></div>`:''}</div>`;
 }
@@ -349,10 +349,10 @@ function render(){
   $('cCargas').textContent=cargas.length?cargas.length+(cargas.length===1?' carga':' cargas'):'';
   $('ult').innerHTML=cargas.slice(0,3).map(c=>itemHTML(c,mapa[c.id],prom,false)).join('')||'<div class="vacio" style="padding:8px 0">Todavía no hay cargas.</div>';
 
-  $('sCons').textContent=kmT?fmt(prom):'—';
-  $('sKml').textContent=kmT?fmt(kmT/ltT):'—';
+  $('sCons').textContent=kmT?fmt(kmT/ltT):'—';
+  $('sKml').textContent=kmT?kmT.toLocaleString('es-AR'):'—';
   $('sCkm').textContent=kmT?peso(plT/kmT):'—';
-  $('sUlt').textContent=tr.length?fmt(tr[tr.length-1].cons):'—';
+  $('sUlt').textContent=tr.length?fmt(100/tr[tr.length-1].cons):'—';
   $('sGasto').textContent=cargas.length?peso(cargas.reduce((s,c)=>s+c.plata,0)):'—';
   $('sPl').textContent=cargas.length?peso(cargas[0].plata/cargas[0].litros):'—';
   const mes=ahora().slice(0,7);
@@ -362,21 +362,21 @@ function render(){
   // gráfico: últimos 8 tramos
   const ult=tr.slice(-8);
   if(ult.length){
-    const mx=Math.max(...ult.map(t=>t.cons));
-    $('grafico').innerHTML='<div class="grafico">'+ult.map(t=>`<div class="col"><em>${fmt(t.cons)}</em><b class="${t.cons>prom*1.08?'alto':''}" style="height:${Math.max(t.cons/mx*78,4)}%"></b><small>${fdia(t.fh)}</small></div>`).join('')+'</div>';
-    $('grafNota').textContent='Las barras ámbar gastaron más de lo normal (8 % arriba del promedio).';
+    const mx=Math.max(...ult.map(t=>100/t.cons));
+    $('grafico').innerHTML='<div class="grafico">'+ult.map(t=>`<div class="col"><em>${fmt(100/t.cons)}</em><b class="${t.cons>prom*1.08?'alto':''}" style="height:${Math.max(100/t.cons/mx*78,4)}%"></b><small>${fdia(t.fh)}</small></div>`).join('')+'</div>';
+    $('grafNota').textContent='Las barras ámbar rindieron menos de lo normal (8 % peor que el promedio).';
   }else{
     $('grafico').innerHTML='<div class="vacio" style="padding:8px 0">Aparece cuando tengas dos cargas con el tanque lleno.</div>';
     $('grafNota').textContent='';
   }
 
   // computadora vs real: solo tramos donde la carga trae lectura de "Reinicio"
-  const cmp=tr.map(t=>{const c=cargas.find(x=>x.id===t.id);return c&&c.comp&&c.comp.pant==='reinicio'&&c.comp.kml>0?{fh:t.fh,real:t.cons,compu:100/c.comp.kml}:null}).filter(Boolean);
+  const cmp=tr.map(t=>{const c=cargas.find(x=>x.id===t.id);return c&&c.comp&&c.comp.pant==='reinicio'&&c.comp.kml>0?{fh:t.fh,real:100/t.cons,compu:c.comp.kml}:null}).filter(Boolean);
   $('cardCmp').hidden=!cmp.length;
   if(cmp.length){
     const dif=cmp.reduce((s,x)=>s+(x.compu/x.real-1),0)/cmp.length*100;
-    $('cmp').innerHTML=cmp.slice(-5).reverse().map(x=>`<div class="item"><div class="mid"><div class="t1">${fdia(x.fh)}</div><div class="t2">Real ${fmt(x.real)} · Computadora ${fmt(x.compu)}</div></div><div class="t1">${x.compu<=x.real?'':'+'}${fmt((x.compu/x.real-1)*100)} %</div></div>`).join('');
-    $('cmpNota').textContent=Math.abs(dif)<0.5?'La computadora marca casi igual que el consumo real.':`En promedio la computadora marca ${fmt(Math.abs(dif))} % ${dif<0?'menos':'más'} consumo que el real. Vale si pusiste “Reinicio” en cero en la carga anterior.`;
+    $('cmp').innerHTML=cmp.slice(-5).reverse().map(x=>`<div class="item"><div class="mid"><div class="t1">${fdia(x.fh)}</div><div class="t2">Real ${fmt(x.real)} · Computadora ${fmt(x.compu)}</div></div><div class="t1">${x.compu<x.real?'':'+'}${fmt((x.compu/x.real-1)*100)} %</div></div>`).join('');
+    $('cmpNota').textContent=Math.abs(dif)<0.5?'La computadora marca casi igual que el rendimiento real.':`En promedio la computadora marca ${fmt(Math.abs(dif))} % ${dif<0?'menos':'más'} km/L que el real.${dif>0?' (es decir, parece que gasta menos de lo que gasta)':''} Vale si pusiste “Reinicio” en cero en la carga anterior.`;
   }
 
   // estaciones: última carga de cada una
@@ -390,7 +390,7 @@ function render(){
   }).join(''):'<div class="vacio" style="padding:8px 0">Anotá la estación al cargar y acá aparece la comparación.</div>';
   $('estList').innerHTML=est.map(s=>`<option value="${esc(s.n)}">`).join('');
 
-  const dat=['ciudad','mixto','ruta'].map(k=>{const ts=tr.filter(t=>t.tipo===k),km=ts.reduce((s,t)=>s+t.km,0),lt=ts.reduce((s,t)=>s+t.litros,0);return{k,km,v:km?lt/km*100:0}});
+  const dat=['ciudad','mixto','ruta'].map(k=>{const ts=tr.filter(t=>t.tipo===k),km=ts.reduce((s,t)=>s+t.km,0),lt=ts.reduce((s,t)=>s+t.litros,0);return{k,km,v:km?km/lt:0}});
   const mx=Math.max(...dat.map(d=>d.v),1);
   $('porTipo').innerHTML=dat.map(d=>`<div class="barra"><div>${ICO[d.k]} ${ETQ[d.k]}<small>${d.km?d.km.toLocaleString('es-AR')+' km':'sin datos'}</small></div><div class="tr"><b style="width:${d.v/mx*100}%"></b></div><div>${d.v?fmt(d.v):'—'}</div></div>`).join('');
 
