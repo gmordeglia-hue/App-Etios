@@ -75,7 +75,7 @@
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .full{grid-column:1/-1}
   label.l{display:block;font-size:13.5px;font-weight:600;color:var(--mut);margin:0 0 6px 2px}
-  input[type=text],input[type=datetime-local],input:not([type]){
+  input[type=text],input[type=password],input[type=url],input[type=datetime-local],input:not([type]){
     width:100%;font:inherit;font-size:17px;padding:13px 14px;border:1.5px solid transparent;border-radius:13px;
     background:var(--field);color:var(--ink);outline:none;transition:border-color .15s,background .15s;appearance:none;-webkit-appearance:none}
   input:focus{border-color:var(--ac);background:var(--card)}
@@ -184,6 +184,8 @@
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom));max-width:90%;background:var(--ink);color:var(--bg);
     padding:12px 16px;border-radius:14px;font-size:14px;font-weight:600;z-index:9;box-shadow:var(--sh);text-align:center}
   .toast[hidden]{display:none}
+  #vAcc[hidden],#vForm[hidden],#vNuevo[hidden]{display:none}
+  #vNuevo .l{margin-top:12px}
 
   @media (max-width:380px){.stat b{font-size:17px}.big-n{font-size:46px}}
 </style>
@@ -286,6 +288,37 @@
     <div class="vacio" id="vacio"><span>⛽</span>Todavía no hay cargas.<br>Tocá “Cargar” para anotar la primera.</div>
   </section></div>
 
+  <div class="pane" data-tab="viajes">
+    <section class="card"><h2 id="vTit">Viajes</h2>
+      <p class="nota" id="vAyuda" style="margin-top:0"></p>
+      <div id="vNuevo">
+        <label class="l" for="vNombre">¿Qué viaje es?</label>
+        <input id="vNombre" list="vNombres" placeholder="Ej: Palermo – Pilar" maxlength="50" autocomplete="off">
+        <datalist id="vNombres"></datalist>
+        <button type="button" class="go" id="vEmpezar" style="margin-top:12px">▶ Empezar viaje</button>
+      </div>
+      <div id="vForm" hidden>
+        <label class="sec fotoTop" for="fotoV" id="vFotoBtn">📷 Foto del tablero</label>
+        <input type="file" id="fotoV" accept="image/*" capture="environment" hidden>
+        <p class="nota" id="fotoVEst"></p>
+        <div class="grid" style="margin-top:12px">
+          <div class="full"><label class="l" for="vOdo">Km del odómetro</label><input id="vOdo" inputmode="numeric" placeholder="58952"></div>
+          <div><label class="l" for="vKml">Consumo prom. (km/L)</label><input id="vKml" inputmode="decimal" placeholder="11,9"></div>
+          <div><label class="l" for="vVel">Velocidad prom. (km/h)</label><input id="vVel" inputmode="decimal" placeholder="23"></div>
+          <div class="full"><label class="l" for="vTiempo">Tiempo (horas:minutos)</label><input id="vTiempo" inputmode="numeric" placeholder="00:13" maxlength="6"></div>
+          <div class="full"><button type="button" class="go" id="vGuardar">Guardar</button></div>
+          <div class="full"><button type="button" class="sec plain lnk" id="vCancelar" style="margin-top:0">Cancelar</button></div>
+        </div>
+        <div class="err" id="vErr"></div>
+      </div>
+      <div id="vAcc" class="bar" style="margin-top:12px" hidden>
+        <button type="button" class="sec" id="vTramo">📷 Empezar tramo</button>
+        <button type="button" class="sec" id="vCerrar">✔ Cerrar viaje</button>
+      </div>
+    </section>
+    <div id="vLista"></div>
+  </div>
+
   <div class="pane" data-tab="mas">
     <section class="card"><h2>Estaciones · $ por litro</h2>
       <div id="estac"></div>
@@ -299,6 +332,24 @@
     <section class="card"><h2>Pantalla</h2>
       <label class="l" for="tema">Colores</label>
       <select id="tema" class="tema"><option value="auto">Automático (como el celular)</option><option value="claro">Siempre claro (mejor con sol)</option><option value="oscuro">Siempre oscuro</option></select>
+    </section>
+    <section class="card"><h2>Planilla de Google · respaldo automático</h2>
+      <p class="nota" id="nubeEstado" style="margin-top:0"></p>
+      <div id="nubeForm">
+        <label class="l" for="nubeUrl" style="margin-top:12px">Enlace de la planilla</label>
+        <input id="nubeUrl" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="off">
+        <label class="l" for="nubeClave" style="margin-top:12px">Contraseña</label>
+        <input id="nubeClave" type="password" autocomplete="off">
+        <div style="margin-top:12px"><label class="sw">Mandar también la ubicación GPS<input type="checkbox" id="nubeGps"><i></i></label></div>
+        <p class="nota">Si lo dejás apagado, la planilla no recibe el GPS de las estaciones (queda solo en este celular).</p>
+      </div>
+      <div class="bar" style="margin-top:10px">
+        <button class="sec" id="nubeConectar">🔗 Conectar</button>
+        <button class="sec" id="nubeSubir">⬆ Subir todo lo que tengo</button>
+        <button class="sec" id="nubeBajar">⬇ Recuperar de la planilla</button>
+        <button class="sec plain" id="nubeDesc">Desconectar</button>
+      </div>
+      <p class="nota">Cada carga que guardás se manda sola a tu planilla. Sin señal, queda pendiente y se manda después. Guardá el enlace y la contraseña en tu gestor de contraseñas: si se limpia el celular hay que volver a pegarlos.</p>
     </section>
     <section class="card"><h2>Respaldo</h2>
       <div class="bar">
@@ -320,11 +371,12 @@
   <button data-go="inicio"><i>🏠</i>Inicio</button>
   <button data-go="cargar" class="fab"><i>＋</i>Cargar</button>
   <button data-go="historial"><i>🧾</i>Historial</button>
+  <button data-go="viajes"><i>🧭</i>Viajes</button>
   <button data-go="mas"><i>⚙️</i>Más</button>
 </nav>
 
 <script>
-const VERSION=14;
+const VERSION=16;
 const KEY='etios-nafta-v1', KEYB='etios-backup', KEYT='etios-tanque', KEYM='etios-modif', KEYC='etios-copia', KEYR='etios-tipo', KEYTEMA='etios-tema';
 const ETQ={ciudad:'Ciudad',mixto:'Mixto',ruta:'Ruta'};
 const ICO={ciudad:'🏙️',mixto:'🔀',ruta:'🛣️'};
@@ -341,6 +393,40 @@ const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const fdia=fh=>new Date(fh).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
 function ahora(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+// ===== Planilla de Google: cada carga se manda sola; las pendientes esperan en una cola =====
+const KEYU='etios-nube-url', KEYK='etios-nube-clave', KEYG='etios-nube-gps', KEYQ='etios-nube-cola', KEYS='etios-nube-ultima';
+let cola=[], nubeError='', sincro=false;
+try{cola=JSON.parse(localStorage.getItem(KEYQ)||'[]')}catch(e){cola=[]}
+if(!Array.isArray(cola))cola=[];
+const nubeOn=()=>!!(lsGet(KEYU)&&lsGet(KEYK));
+const guardarCola=()=>lsSet(KEYQ,JSON.stringify(cola));
+const idOp=o=>o.t==='u'?o.c.id:o.id;
+function ponerCola(op){
+  if(!nubeOn())return;
+  cola=cola.filter(x=>idOp(x)!==idOp(op));cola.push(op);guardarCola();nubeSync();
+}
+async function nubeLlamar(cuerpo){
+  const r=await fetch(lsGet(KEYU),{method:'POST',body:JSON.stringify({clave:lsGet(KEYK),...cuerpo})});
+  const j=await r.json(); if(!j.ok)throw new Error(j.error||'error'); return j;
+}
+function paraNube(c){const o={...c};if(lsGet(KEYG)!=='1'){delete o.lat;delete o.lon}return o}
+function nubeTexto(e){return e&&e.message==='clave'?'La contraseña no coincide con la de la planilla.':'No pude hablar con la planilla (¿sin señal o enlace mal pegado?).'}
+async function nubeSync(){
+  if(!nubeOn()||sincro||!cola.length){nubeEstado();return}
+  sincro=true;nubeError='';
+  try{
+    const lote=cola.slice();
+    await nubeLlamar({accion:'lote',ops:lote.map(o=>o.t==='u'?{t:'u',c:paraNube(o.c)}:o)});
+    cola=cola.filter(x=>!lote.includes(x));guardarCola();lsSet(KEYS,String(Date.now()));
+  }catch(e){nubeError=nubeTexto(e)}
+  finally{sincro=false;nubeEstado();respaldo()}
+}
+function nubeEstado(){
+  const e=$('nubeEstado'); if(!e)return;
+  if(!nubeOn()){e.textContent='Sin conectar: las cargas viven solo en este celular. Conectá tu planilla para que se guarden también en tu Drive.';return}
+  const u=parseInt(lsGet(KEYS)||'0');
+  e.textContent=cola.length?`Conectada. ${cola.length} ${cola.length===1?'carga sin subir':'cargas sin subir'} todavía.${nubeError?' '+nubeError:''}`:`Conectada. Todo subido${u?' (última vez: '+new Date(u).toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+')':''}.`;
+}
 function save(){const j=JSON.stringify(cargas);lsSet(KEY,j);lsSet(KEYC,j);lsSet(KEYM,String(Date.now()))}
 // copia interna: si la lista principal aparece vacía, se ofrece recuperarla
 let recup=null;
@@ -464,13 +550,17 @@ function respaldo(){
   const t=parseInt(lsGet(KEYB)||'0'), dias=t?Math.floor((Date.now()-t)/864e5):null;
   $('respEstado').textContent=t?`Último respaldo: ${dias===0?'hoy':dias===1?'ayer':'hace '+dias+' días'}.`:'Todavía no descargaste ningún respaldo.';
   const m=parseInt(lsGet(KEYM)||'0');
-  const falta=cargas.length>0&&(!t||m>t);
+  const nubeAlDia=nubeOn()&&!cola.length;
+  const falta=cargas.length>0&&!nubeAlDia&&(!t||m>t);
   $('avisoResp').hidden=!falta;
   if(falta)$('avisoTxt').textContent=t?'Tenés cargas nuevas sin respaldar.':'Todavía no hiciste ningún respaldo.';
   // lista vacía: puede ser que se haya borrado
   const vacio=!cargas.length;
   $('avisoVacio').hidden=!vacio;
-  if(vacio){
+  if(vacio&&nubeOn()){
+    $('avisoVacioTxt').textContent='La lista apareció vacía, pero tu planilla de Google puede tener las cargas.';
+    $('avisoVacioBtn').textContent='Recuperar';
+  }else if(vacio){
     $('avisoVacioTxt').textContent=recup?`La lista apareció vacía, pero hay una copia de ${recup.length} cargas dentro de la app.`:'No hay cargas. Si ya tenías, restaurá tu respaldo.';
     $('avisoVacioBtn').textContent=recup?'Recuperar':'Restaurar';
   }
@@ -528,14 +618,14 @@ $('f').addEventListener('submit',e=>{
   const antes=editId;
   cargas=otras.concat(nueva);
   lsSet(KEYR,nueva.tipo);
-  save();limpiarForm();render();ir(antes?'historial':'inicio');
+  save();ponerCola({t:'u',c:nueva});limpiarForm();render();ir(antes?'historial':'inicio');
   if(!antes)toast('Guardado. Tocá “Respaldar” para no perder las cargas.');
   if(comp&&comp.pant==='reinicio'&&!antes)toast('Guardado. Acordate de poner en cero “Reinicio” y de respaldar.');
 });
 $('lista').addEventListener('click',e=>{
   const ed=e.target.closest('[data-edit]'); if(ed){editar(ed.dataset.edit);return}
   const b=e.target.closest('[data-id]'); if(!b)return;
-  if(confirm('¿Borrar esta carga?')){cargas=cargas.filter(c=>c.id!==b.dataset.id);save();render()}
+  if(confirm('¿Borrar esta carga?')){cargas=cargas.filter(c=>c.id!==b.dataset.id);save();ponerCola({t:'d',id:b.dataset.id});render()}
 });
 
 // Devuelve 'compartido' (menú de compartir de Android), 'descargado' (carpeta Descargas) o 'cancelado'
@@ -568,10 +658,50 @@ function sumarCargas(d){
   const nuevas=d.filter(c=>!ids.has(c.id)&&!huella.has(c.fh+'|'+c.km));
   if(!nuevas.length){alert('Ya tenés todas las cargas de ese respaldo.');return}
   if(confirm(`Se van a sumar ${nuevas.length} cargas que faltan (el respaldo tiene ${d.length}). No se borra nada de lo que ya tenés. ¿Seguir?`)){
-    cargas=cargas.concat(nuevas);save();recup=null;lsSet(KEYB,String(Date.now()));render();toast(`Se sumaron ${nuevas.length} cargas.`);
+    cargas=cargas.concat(nuevas);save();nuevas.forEach(c=>ponerCola({t:'u',c}));recup=null;lsSet(KEYB,String(Date.now()));render();toast(`Se sumaron ${nuevas.length} cargas.`);
   }
 }
-$('avisoVacioBtn').onclick=()=>{if(recup)sumarCargas(recup);else $('imp').click()};
+$('avisoVacioBtn').onclick=()=>{if(nubeOn())nubeRecuperar();else if(recup)sumarCargas(recup);else $('imp').click()};
+$('nubeUrl').value=lsGet(KEYU)||'';$('nubeClave').value=lsGet(KEYK)||'';$('nubeGps').checked=lsGet(KEYG)==='1';
+$('nubeGps').onchange=()=>lsSet(KEYG,$('nubeGps').checked?'1':'0');
+$('nubeConectar').onclick=async()=>{
+  const u=$('nubeUrl').value.trim(), k=$('nubeClave').value.trim();
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)){alert('El enlace tiene que empezar con https://script.google.com/macros/s/ y terminar en /exec. Copialo entero desde Google.');return}
+  if(k.length<8){alert('La contraseña es muy corta (mínimo 8 letras o números).');return}
+  const antes=[lsGet(KEYU),lsGet(KEYK)];lsSet(KEYU,u);lsSet(KEYK,k);
+  try{
+    const j=await nubeLlamar({accion:'leer'});
+    toast(`Conectada. La planilla tiene ${j.cargas.length} cargas.`);nubeError='';
+    if(cargas.length&&!lsGet(KEYS))toast('Conectada. Tocá “Subir todo lo que tengo” para mandar las cargas que ya tenés.');
+  }catch(e){
+    lsSet(KEYU,antes[0]||'');lsSet(KEYK,antes[1]||'');alert(nubeTexto(e));
+  }
+  nubeEstado();render();
+};
+$('nubeSubir').onclick=()=>{
+  if(!nubeOn()){alert('Primero conectá la planilla.');return}
+  if(!cargas.length){toast('No hay cargas para subir.');return}
+  cargas.forEach(c=>{cola=cola.filter(x=>idOp(x)!==c.id);cola.push({t:'u',c})});guardarCola();
+  toast('Subiendo '+cargas.length+' cargas…');nubeSync();
+};
+async function nubeRecuperar(){
+  if(!nubeOn()){alert('Primero conectá la planilla.');return}
+  try{
+    const j=await nubeLlamar({accion:'leer'});
+    const ok=(j.cargas||[]).filter(c=>c&&c.id&&typeof c.fh==='string'&&c.litros>0&&c.plata>0&&c.km>0);
+    if(!ok.length){toast('La planilla no tiene cargas.');return}
+    sumarCargas(ok);
+  }catch(e){alert(nubeTexto(e))}
+}
+$('nubeBajar').onclick=nubeRecuperar;
+$('nubeDesc').onclick=()=>{
+  if(!nubeOn()){return}
+  if(confirm('Se deja de mandar a la planilla (lo que ya está en la planilla queda). ¿Desconectar?')){
+    lsSet(KEYU,'');lsSet(KEYK,'');cola=[];guardarCola();$('nubeUrl').value=$('nubeClave').value='';nubeEstado();render();
+  }
+};
+window.addEventListener('online',nubeSync);
+nubeEstado();
 $('estChips').addEventListener('click',e=>{const b=e.target.closest('[data-est]');if(b){$('est').value=b.dataset.est;$('d-est').open=true}});
 $('kmSug').addEventListener('click',e=>{const b=e.target.closest('[data-km]');if(b){$('km').value=b.dataset.km;previa()}});
 $('tema').value=lsGet(KEYTEMA)||'auto';
@@ -707,12 +837,134 @@ $('foto').onchange=async e=>{
   }
 };
 
-function ir(t){document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.tab===t));
+// ===== Viajes: foto del tablero al salir y al llegar → consumo del tramo, sin cargar nafta =====
+// Siempre con la pantalla "Desde Inicio". Los km salen del odómetro; los litros, de lo que cambió el consumo promedio de la computadora.
+const KEYV='etios-viajes';
+let viajes=[], vModo=null;
+try{viajes=JSON.parse(lsGet(KEYV)||'[]')}catch(e){viajes=[]}
+if(!Array.isArray(viajes))viajes=[];
+const saveV=()=>lsSet(KEYV,JSON.stringify(viajes));
+const hrs=t=>{const m=/^(\d{1,3}):(\d{2})$/.exec(String(t||'').trim());return m&&+m[2]<60?+m[1]+m[2]/60:null};
+const vAbierto=()=>viajes.find(v=>!v.cerrado);
+const tramoAbierto=v=>v&&v.tramos.find(t=>!t.b);
+function precioLitro(){const c=cargas.filter(x=>x.litros>0&&x.plata>0).sort((a,b)=>a.fh<b.fh?-1:1).pop();return c?c.plata/c.litros:null}
+function calcTramo(t){
+  const a=t.a,b=t.b,r={km:b.odo-a.odo,avisos:[]};
+  if(!(r.km>0)){r.error='el odómetro de la segunda foto tiene que ser mayor que el de la primera';return r}
+  const h0=hrs(a.tiempo),h1=hrs(b.tiempo);
+  if(h1==null||!(b.kml>0)||!(b.vel>=0)){r.error='faltan datos de la foto final';return r}
+  if(h0==null){r.error='faltan datos de la foto inicial';return r}
+  if(h1<h0){r.error='el tiempo de la computadora bajó entre las fotos (¿se puso en cero “Inicio” en el medio?)';return r}
+  let D0=0;
+  if(h0>0){
+    if(!(a.kml>0)||!(a.vel>0)){r.error='faltan datos de la foto inicial';return r}
+    D0=a.vel*h0;
+  }
+  const f=(D0+r.km)/b.kml-(D0>0?D0/a.kml:0);
+  if(!(f>0.05)){r.error='no se pudo calcular los litros (los datos de las dos fotos son casi iguales)';return r}
+  r.litros=f;r.kml=r.km/f;
+  const p=precioLitro();if(p)r.plata=f*p;
+  const D1=b.vel*h1;
+  if(Math.abs(D1-(D0+r.km))>0.15*(D0+r.km))r.avisos.push('Los datos de la computadora no cierran bien con el odómetro. Fijate que ambas fotos sean de “Desde Inicio” y que no se haya puesto en cero en el medio.');
+  const eF=0.05*((D0+r.km)/(b.kml*b.kml)+(D0>0?D0/(a.kml*a.kml):0))/f*100, eK=100/r.km;
+  r.err=Math.min(99,Math.round(Math.sqrt(eF*eF+eK*eK)));
+  if(r.km<20)r.avisos.push('Tramo corto: el odómetro redondea a km enteros.');
+  if(r.err>=15)r.avisos.push('Margen de error alto: tomalo como una idea aproximada.');
+  return r;
+}
+function totalViaje(v){
+  const o={km:0,litros:0,plata:0,n:0,plataOk:true};
+  v.tramos.forEach(t=>{if(!t.b)return;const r=calcTramo(t);if(r.error)return;o.km+=r.km;o.litros+=r.litros;if(r.plata==null)o.plataOk=false;else o.plata+=r.plata;o.n++});
+  o.kml=o.litros>0?o.km/o.litros:null;return o;
+}
+function renderV(){
+  const v=vAbierto(), t=tramoAbierto(v);
+  $('vNuevo').hidden=!!v; $('vAcc').hidden=!v||!!vModo; $('vForm').hidden=!vModo;
+  $('vTramo').textContent=t?'📷 Terminar tramo':'📷 Empezar tramo';
+  $('vAyuda').textContent=vModo?(vModo==='a'?'Sacale una foto al tablero ahora, con la pantalla “Desde Inicio”.':'Sacale una foto al tablero al llegar, con la pantalla “Desde Inicio”.')
+    :!v?'Sacale una foto al tablero (pantalla “Desde Inicio”) al salir y otra al llegar: la app calcula cuánto consumiste en el tramo. Si el viaje tiene paradas, se suman los tramos.'
+    :t?`Viaje “${v.nombre}”: tramo en curso desde el km ${t.a.odo}. Al llegar o parar, tocá “Terminar tramo”.`:`Viaje “${v.nombre}” en curso. Al salir, tocá “Empezar tramo”. Cuando termines todo, “Cerrar viaje”.`;
+  $('vNombres').innerHTML=[...new Set(viajes.map(x=>x.nombre))].map(n=>`<option value="${esc(n)}">`).join('');
+  // lista
+  const L=[], fila=(t,i)=>{
+    if(!t.b)return `<div class="nota" style="margin:6px 0">Tramo ${i+1} · en curso desde el km ${t.a.odo} <button class="sec" data-vdt="${t.id}" style="padding:4px 10px;font-size:13px">✕</button></div>`;
+    const r=calcTramo(t);
+    if(r.error)return `<div class="nota" style="margin:6px 0">Tramo ${i+1} · ${fmt(r.km,0)} km · no se pudo calcular: ${esc(r.error)} <button class="sec" data-vdt="${t.id}" style="padding:4px 10px;font-size:13px">✕</button></div>`;
+    return `<div style="margin:8px 0"><b>Tramo ${i+1}</b> · ${fmt(r.km,0)} km · <b>${fmt(r.kml)} km/L</b> · ${fmt(r.litros,2)} L${r.plata!=null?' · '+peso(r.plata):''} <span class="nota" style="margin:0">(±${r.err} %)</span> <button class="sec" data-vdt="${t.id}" style="padding:4px 10px;font-size:13px">✕</button>${r.avisos.map(a=>`<div class="nota" style="margin:2px 0 0">⚠ ${esc(a)}</div>`).join('')}</div>`;
+  };
+  const orden=viajes.slice().reverse();
+  // resumen por viaje habitual
+  const por={};
+  viajes.filter(x=>x.cerrado).forEach(x=>{const o=totalViaje(x);if(!o.n)return;const p=por[x.nombre]=por[x.nombre]||{km:0,litros:0,plata:0,plataOk:true,viajes:0};p.km+=o.km;p.litros+=o.litros;p.plata+=o.plata;if(!o.plataOk)p.plataOk=false;p.viajes++});
+  const nom=Object.keys(por);
+  if(nom.length)L.push(`<section class="card"><h2>Viajes habituales · promedio</h2>${nom.map(n=>{const p=por[n];return `<div style="margin:8px 0"><b>${esc(n)}</b><br><span class="nota" style="margin:0">${p.viajes} ${p.viajes===1?'viaje':'viajes'} · <b>${fmt(p.km/p.litros)} km/L</b> · ${fmt(p.km/p.viajes,0)} km y ${fmt(p.litros/p.viajes,1)} L por viaje${p.plataOk?' · '+peso(p.plata/p.viajes)+' por viaje':''}</span></div>`}).join('')}</section>`);
+  orden.forEach(x=>{
+    const o=totalViaje(x);
+    L.push(`<section class="card"><h2>${esc(x.nombre)} <span class="cnt">${fdia(x.fh)}${x.cerrado?'':' · en curso'}</span></h2>`+
+      (o.n?`<div class="stats"><div class="stat"><b>${fmt(o.km,0)}</b><span>km</span></div><div class="stat"><b>${fmt(o.kml)}</b><span>km/L</span></div><div class="stat"><b>${fmt(o.litros,1)}</b><span>litros${o.plataOk?' · '+peso(o.plata):''}</span></div></div>`:'')+
+      (x.tramos.length?x.tramos.map(fila).join(''):'<p class="nota">Todavía sin tramos.</p>')+
+      `<button class="sec plain lnk" data-vdel="${x.id}" style="margin-top:8px">Borrar este viaje</button></section>`);
+  });
+  $('vLista').innerHTML=L.join('');
+}
+function vError(m){$('vErr').textContent=m||''}
+function abrirForm(modo){
+  vModo=modo; ['vOdo','vKml','vVel','vTiempo'].forEach(i=>$(i).value=''); vError('');
+  $('fotoVEst').textContent='La app lee el odómetro y los datos de la pantalla. La foto no se guarda. Si no lee algo, completalo a mano.';
+  $('vGuardar').textContent=modo==='a'?'Guardar y salir de viaje':'Guardar tramo';
+  renderV();
+}
+$('vEmpezar').onclick=()=>{
+  const n=$('vNombre').value.trim(); if(!n){$('vNombre').focus();toast('Ponele un nombre al viaje');return}
+  viajes.push({id:Date.now().toString(36),nombre:n,fh:ahora(),cerrado:false,tramos:[]}); saveV(); $('vNombre').value=''; renderV();
+};
+$('vTramo').onclick=()=>abrirForm(tramoAbierto(vAbierto())?'b':'a');
+$('vCancelar').onclick=()=>{vModo=null;renderV()};
+$('vCerrar').onclick=()=>{
+  const v=vAbierto(); if(!v)return;
+  if(tramoAbierto(v)){toast('Primero terminá el tramo en curso');return}
+  if(!v.tramos.length){viajes=viajes.filter(x=>x!==v);saveV();renderV();toast('Viaje vacío descartado');return}
+  v.cerrado=true; saveV(); renderV(); const o=totalViaje(v); toast(o.n?`Viaje cerrado: ${fmt(o.km,0)} km a ${fmt(o.kml)} km/L`:'Viaje cerrado');
+};
+$('vGuardar').onclick=()=>{
+  const odo=parseInt($('vOdo').value.replace(/\D/g,'')), kml=numL($('vKml').value), vel=numL($('vVel').value), tiempo=$('vTiempo').value.trim().replace(/[.;,]/g,':');
+  if(!(odo>0)){vError('Falta el odómetro.');return}
+  const h=hrs(tiempo); if(h==null){vError('El tiempo va así: horas:minutos, por ejemplo 00:13.');return}
+  if(h>0&&!(kml>0&&vel>=0)){vError('Faltan el consumo y la velocidad promedio.');return}
+  if(vModo==='b'&&!(h>0)){vError('El tiempo no puede ser 00:00 al llegar.');return}
+  const x={odo,kml:kml>0?kml:null,vel:vel>=0?vel:null,tiempo,fh:ahora()}, v=vAbierto();
+  if(vModo==='a'){v.tramos.push({id:Date.now().toString(36),a:x,b:null}); vModo=null; saveV(); renderV(); toast('Listo. Buen viaje 🚗'); return}
+  const t=tramoAbierto(v); t.b=x; const r=calcTramo(t);
+  if(r.error){t.b=null;vError('No cierra: '+r.error+'.');return}
+  vModo=null; saveV(); renderV(); toast(`Tramo: ${fmt(r.km,0)} km a ${fmt(r.kml)} km/L`);
+};
+$('vLista').addEventListener('click',e=>{
+  const d=e.target.closest('[data-vdel]'), t=e.target.closest('[data-vdt]');
+  if(d){if(confirm('¿Borrar este viaje?')){viajes=viajes.filter(x=>x.id!==d.dataset.vdel);saveV();renderV()}}
+  else if(t){if(confirm('¿Borrar este tramo?')){viajes.forEach(v=>{v.tramos=v.tramos.filter(y=>y.id!==t.dataset.vdt)});saveV();renderV()}}
+});
+$('fotoV').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f)return;
+  const est=$('fotoVEst'); est.textContent='Preparando el lector…';
+  try{
+    const r=await leerTablero(f,m=>{est.textContent=/load|init/i.test(m.status)?'Descargando el lector (solo la primera vez, necesita internet)…':'Leyendo la foto… '+Math.round((m.progress||0)*100)+' %'});
+    if(r.odo)$('vOdo').value=r.odo;
+    if(r.kml)$('vKml').value=String(r.kml).replace('.',',');
+    if(r.vel!=null)$('vVel').value=String(r.vel);
+    if(r.tiempo)$('vTiempo').value=r.tiempo;
+    const falta=[!r.odo&&'odómetro',!r.kml&&'consumo',r.vel==null&&'velocidad',!r.tiempo&&'tiempo'].filter(Boolean);
+    est.textContent=(falta.length<4?'Leí lo que pude. Revisá que estén bien los números. ':'No pude leer nada de la foto. ')+(falta.length?'No leí: '+falta.join(', ')+', completalo a mano. ':'')+(r.pant==='reinicio'?'⚠ Parece que la pantalla es “Desde Reinicio”: para viajes usá “Desde Inicio”. ':'')+'La foto no se guardó.';
+  }catch(x){
+    est.textContent=window.Tesseract?'No pude leer la foto. Probá con más luz o más cerca, o cargá los datos a mano.':'No pude bajar el lector. La primera vez necesita internet. Cargá los datos a mano.';
+  }
+};
+
+function ir(t){if(t==='viajes')renderV();document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.dataset.tab===t));
   document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.go===t));window.scrollTo(0,0)}
 document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{if(b.dataset.go==='cargar'&&editId)limpiarForm();ir(b.dataset.go)});
 
 try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().then(()=>navigator.storage.persisted()).then(p=>{$('persEstado').textContent=p?'Guardado protegido: el navegador prometió no borrar estos datos por su cuenta (igual puede borrarlos un limpiador del celular).':'Ojo: el navegador no garantiza conservar estos datos. Respaldá seguido.'})}catch(e){}
-$('fh').value=ahora(); render(); ir('inicio');
+$('fh').value=ahora(); render(); ir('inicio'); nubeSync();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
