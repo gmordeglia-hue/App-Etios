@@ -1,2 +1,6 @@
 etios-nafta-*.json
 *.json.bak
+
+# Notas de trabajo: quedan solo en la compu, no se suben
+CLAUDE.md
+estado-del-proyecto.md
