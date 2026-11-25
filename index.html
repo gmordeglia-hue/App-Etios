@@ -202,7 +202,7 @@
 
 <main>
   <div class="pane" data-tab="inicio">
-    <div class="aviso" id="avisoVacio" hidden><span id="avisoVacioTxt"></span><button type="button" id="avisoVacioBtn">Restaurar</button></div>
+    <div class="aviso" id="avisoVacio" hidden><span id="avisoVacioTxt"></span><button type="button" id="avisoVacioBtn">Restaurar</button><button type="button" id="avisoVacioDesc" hidden>Descartar</button></div>
     <div class="aviso" id="avisoResp" hidden><span id="avisoTxt"></span><button type="button" id="avisoBtn">Respaldar</button></div>
     <section class="card"><h2>Resumen</h2>
       <div class="stats">
@@ -376,13 +376,16 @@
 </nav>
 
 <script>
-const VERSION=16;
+const VERSION=17;
 const KEY='etios-nafta-v1', KEYB='etios-backup', KEYT='etios-tanque', KEYM='etios-modif', KEYC='etios-copia', KEYR='etios-tipo', KEYTEMA='etios-tema';
 const ETQ={ciudad:'Ciudad',mixto:'Mixto',ruta:'Ruta'};
 const ICO={ciudad:'🏙️',mixto:'🔀',ruta:'🛣️'};
 let cargas=[], editId=null, pos=null;
-try{cargas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){cargas=[]}
-if(!Array.isArray(cargas))cargas=[];
+// Si lo guardado está dañado, el texto se guarda aparte (KEYD) para no perderlo, sin pisar uno más grande
+const KEYD='etios-nafta-v1-danado';
+function guardarDanado(){try{const t=localStorage.getItem(KEY),d=localStorage.getItem(KEYD);if(t&&(!d||t.length>=d.length))localStorage.setItem(KEYD,t)}catch(e){}}
+try{cargas=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){cargas=[];guardarDanado()}
+if(!Array.isArray(cargas)){guardarDanado();cargas=[]}
 const $=id=>document.getElementById(id);
 const num=s=>parseFloat(String(s).replace(/\./g,'').replace(',','.'));
 const numL=s=>parseFloat(String(s).replace(',','.'));
@@ -427,10 +430,11 @@ function nubeEstado(){
   const u=parseInt(lsGet(KEYS)||'0');
   e.textContent=cola.length?`Conectada. ${cola.length} ${cola.length===1?'carga sin subir':'cargas sin subir'} todavía.${nubeError?' '+nubeError:''}`:`Conectada. Todo subido${u?' (última vez: '+new Date(u).toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+')':''}.`;
 }
-function save(){const j=JSON.stringify(cargas);lsSet(KEY,j);lsSet(KEYC,j);lsSet(KEYM,String(Date.now()))}
-// copia interna: si la lista principal aparece vacía, se ofrece recuperarla
+// Mientras haya una copia interna para recuperar (recup), save() no la pisa
+function save(){const j=JSON.stringify(cargas);lsSet(KEY,j);if(!recup)lsSet(KEYC,j);lsSet(KEYM,String(Date.now()))}
+// copia interna: si tiene más cargas que la lista principal (o la lista aparece vacía), se ofrece recuperarla
 let recup=null;
-if(!cargas.length){try{const c=JSON.parse(localStorage.getItem(KEYC)||'[]');if(Array.isArray(c)&&c.length)recup=c}catch(e){}}
+try{const c=JSON.parse(localStorage.getItem(KEYC)||'[]');if(Array.isArray(c)&&c.length>cargas.length)recup=c}catch(e){}
 // tema de colores
 function aplicarTema(){const t=lsGet(KEYTEMA)||'auto';if(t==='auto')document.documentElement.removeAttribute('data-tema');else document.documentElement.setAttribute('data-tema',t)}
 aplicarTema();
@@ -549,20 +553,27 @@ function render(){
 function respaldo(){
   const t=parseInt(lsGet(KEYB)||'0'), dias=t?Math.floor((Date.now()-t)/864e5):null;
   $('respEstado').textContent=t?`Último respaldo: ${dias===0?'hoy':dias===1?'ayer':'hace '+dias+' días'}.`:'Todavía no descargaste ningún respaldo.';
-  const m=parseInt(lsGet(KEYM)||'0');
+  const m=parseInt(lsGet(KEYM)||'0'), mv=parseInt(lsGet(KEYMV)||'0');
   const nubeAlDia=nubeOn()&&!cola.length;
-  const falta=cargas.length>0&&!nubeAlDia&&(!t||m>t);
+  const faltaC=cargas.length>0&&!nubeAlDia&&(!t||m>t);
+  // los viajes no van a la planilla: cuentan aunque la planilla esté al día
+  const faltaV=mv>0&&(t?mv>t:viajes.length>0);
+  const falta=faltaC||faltaV;
   $('avisoResp').hidden=!falta;
-  if(falta)$('avisoTxt').textContent=t?'Tenés cargas nuevas sin respaldar.':'Todavía no hiciste ningún respaldo.';
-  // lista vacía: puede ser que se haya borrado
+  if(falta)$('avisoTxt').textContent=!t?'Todavía no hiciste ningún respaldo.':faltaC?'Tenés cargas nuevas sin respaldar.':'Tenés viajes sin respaldar.';
+  // lista vacía (puede ser que se haya borrado) o copia interna con más cargas
   const vacio=!cargas.length;
-  $('avisoVacio').hidden=!vacio;
-  if(vacio&&nubeOn()){
+  $('avisoVacio').hidden=!vacio&&!recup;
+  $('avisoVacioDesc').hidden=!recup;
+  if(recup){
+    $('avisoVacioTxt').textContent=vacio?`La lista apareció vacía, pero hay una copia de ${recup.length} cargas dentro de la app.`:`Hay una copia dentro de la app con ${recup.length} cargas; acá ves ${cargas.length}.`;
+    $('avisoVacioBtn').textContent='Recuperar';
+  }else if(vacio&&nubeOn()){
     $('avisoVacioTxt').textContent='La lista apareció vacía, pero tu planilla de Google puede tener las cargas.';
     $('avisoVacioBtn').textContent='Recuperar';
   }else if(vacio){
-    $('avisoVacioTxt').textContent=recup?`La lista apareció vacía, pero hay una copia de ${recup.length} cargas dentro de la app.`:'No hay cargas. Si ya tenías, restaurá tu respaldo.';
-    $('avisoVacioBtn').textContent=recup?'Recuperar':'Restaurar';
+    $('avisoVacioTxt').textContent='No hay cargas. Si ya tenías, restaurá tu respaldo.';
+    $('avisoVacioBtn').textContent='Restaurar';
   }
 }
 
@@ -638,8 +649,9 @@ async function bajar(blob,nombre){
   return 'descargado';
 }
 async function hacerRespaldo(){
-  if(!cargas.length){toast('Todavía no hay cargas para respaldar.');return}
-  const r=await bajar(new Blob([JSON.stringify(cargas,null,1)],{type:'application/json'}),'etios-nafta-'+ahora().slice(0,10)+'.json');
+  if(!cargas.length&&!viajes.length){toast('Todavía no hay cargas para respaldar.');return}
+  // formato 2: cargas y viajes juntos (restaurar acepta también la lista vieja, solo cargas)
+  const r=await bajar(new Blob([JSON.stringify({app:'etios',v:2,cargas,viajes},null,1)],{type:'application/json'}),'etios-nafta-'+ahora().slice(0,10)+'.json');
   if(r==='cancelado'){toast('Respaldo cancelado: no se guardó.');return}
   lsSet(KEYB,String(Date.now()));respaldo();
   toast(r==='compartido'?'Listo. Fijate que haya quedado en el lugar que elegiste (Drive, WhatsApp, mail).':'Se guardó en Descargas de este celular. Pasalo a Drive o a otro lado para que no se pierda.');
@@ -652,16 +664,32 @@ $('csv').onclick=()=>{
   bajar(new Blob(['﻿'+f.map(r=>r.join(';')).join('\r\n')],{type:'text/csv'}),'etios-nafta-'+ahora().slice(0,10)+'.csv');
 };
 $('impB').onclick=()=>$('imp').click();
-// Restaurar SUMA las cargas que faltan; no borra ni pisa lo que ya hay
-function sumarCargas(d){
+// Restaurar SUMA las cargas (y viajes, si vienen) que faltan; no borra ni pisa lo que ya hay.
+// vs: viajes del respaldo nuevo; la planilla, la copia interna y el respaldo viejo llaman sin viajes.
+function sumarCargas(d,vs){
   const ids=new Set(cargas.map(c=>c.id)), huella=new Set(cargas.map(c=>c.fh+'|'+c.km));
   const nuevas=d.filter(c=>!ids.has(c.id)&&!huella.has(c.fh+'|'+c.km));
-  if(!nuevas.length){alert('Ya tenés todas las cargas de ese respaldo.');return}
-  if(confirm(`Se van a sumar ${nuevas.length} cargas que faltan (el respaldo tiene ${d.length}). No se borra nada de lo que ya tenés. ¿Seguir?`)){
-    cargas=cargas.concat(nuevas);save();nuevas.forEach(c=>ponerCola({t:'u',c}));recup=null;lsSet(KEYB,String(Date.now()));render();toast(`Se sumaron ${nuevas.length} cargas.`);
+  const idsV=new Set(viajes.map(v=>v.id)), nuevosV=(vs||[]).filter(v=>!idsV.has(v.id));
+  const nC=nuevas.length, nV=nuevosV.length;
+  const partes=[nC?nC+(nC===1?' carga':' cargas'):'',nV?nV+(nV===1?' viaje':' viajes'):''].filter(Boolean).join(' y ');
+  if(!nC&&!nV){if(d===recup){recup=null;render()}alert(vs?'Ya tenés todas las cargas y viajes de ese respaldo.':'Ya tenés todas las cargas de ese respaldo.');return}
+  if(confirm(vs?`Se van a sumar ${partes} que faltan. No se borra nada de lo que ya tenés. ¿Seguir?`:`Se van a sumar ${nC} cargas que faltan (el respaldo tiene ${d.length}). No se borra nada de lo que ya tenés. ¿Seguir?`)){
+    cargas=cargas.concat(nuevas);
+    // la recuperación pendiente se suelta si ya no hace falta (antes de save, para que la copia interna se actualice)
+    if(recup&&(d===recup||recup.length<=cargas.length))recup=null;
+    save();nuevas.forEach(c=>ponerCola({t:'u',c}));
+    if(nV){viajes=viajes.concat(nuevosV);saveV()}
+    lsSet(KEYB,String(Date.now()));render();toast(vs?`Se sumaron ${partes}.`:`Se sumaron ${nC} cargas.`);
   }
 }
-$('avisoVacioBtn').onclick=()=>{if(nubeOn())nubeRecuperar();else if(recup)sumarCargas(recup);else $('imp').click()};
+$('avisoVacioBtn').onclick=()=>{if(recup)sumarCargas(recup);else if(nubeOn())nubeRecuperar();else $('imp').click()};
+// Descartar la copia interna: el 1er toque pregunta "¿Seguro?" y hay que tocar de nuevo en 4 segundos; la copia pasa a ser igual a la lista actual
+$('avisoVacioDesc').onclick=()=>{
+  const b=$('avisoVacioDesc');
+  if(!b.dataset.armado){b.dataset.armado='1';b.textContent='¿Seguro?';clearTimeout(b.t);b.t=setTimeout(()=>{delete b.dataset.armado;b.textContent='Descartar'},4000);return}
+  clearTimeout(b.t);delete b.dataset.armado;b.textContent='Descartar';
+  recup=null;lsSet(KEYC,JSON.stringify(cargas));render();toast('Copia descartada.');
+};
 $('nubeUrl').value=lsGet(KEYU)||'';$('nubeClave').value=lsGet(KEYK)||'';$('nubeGps').checked=lsGet(KEYG)==='1';
 $('nubeGps').onchange=()=>lsSet(KEYG,$('nubeGps').checked?'1':'0');
 $('nubeConectar').onclick=async()=>{
@@ -709,11 +737,14 @@ $('tema').onchange=()=>{lsSet(KEYTEMA,$('tema').value);aplicarTema()};
 $('ver').textContent='Etios · Nafta — versión '+VERSION;
 $('imp').onchange=async e=>{
   try{
-    const d=JSON.parse(await e.target.files[0].text());
+    const j=JSON.parse(await e.target.files[0].text());
+    // respaldo viejo = lista de cargas; nuevo = {app:'etios', v:2, cargas, viajes}
+    const nuevo=!Array.isArray(j)&&j&&j.app==='etios'&&Array.isArray(j.cargas);
+    const d=nuevo?j.cargas:j;
     const ok=Array.isArray(d)&&d.every(c=>c&&typeof c.fh==='string'&&c.litros>0&&c.plata>0&&c.km>0);
     if(!ok)throw 0;
     d.forEach((c,i)=>{if(!c.id)c.id=Date.now().toString(36)+i});
-    sumarCargas(d);
+    sumarCargas(d,nuevo?(Array.isArray(j.viajes)?j.viajes.filter(viajeOk):[]):undefined);
   }catch(x){alert('Ese archivo no es un respaldo válido.')}
   e.target.value='';
 };
@@ -839,11 +870,17 @@ $('foto').onchange=async e=>{
 
 // ===== Viajes: foto del tablero al salir y al llegar → consumo del tramo, sin cargar nafta =====
 // Siempre con la pantalla "Desde Inicio". Los km salen del odómetro; los litros, de lo que cambió el consumo promedio de la computadora.
-const KEYV='etios-viajes';
+const KEYV='etios-viajes', KEYMV='etios-modif-viajes';
 let viajes=[], vModo=null;
 try{viajes=JSON.parse(lsGet(KEYV)||'[]')}catch(e){viajes=[]}
 if(!Array.isArray(viajes))viajes=[];
-const saveV=()=>lsSet(KEYV,JSON.stringify(viajes));
+// los viajes de antes de la versión 17 no estaban en ningún respaldo: cuentan como sin respaldar
+if(viajes.length&&!lsGet(KEYMV))lsSet(KEYMV,String(Date.now()));
+// guardar un viaje (crear, cambiar o borrar) lo marca como "sin respaldar"
+const saveV=()=>{lsSet(KEYV,JSON.stringify(viajes));lsSet(KEYMV,String(Date.now()));respaldo()};
+// revisa que un viaje de un respaldo tenga la forma que usa la app
+const tomaOk=x=>x&&typeof x==='object'&&x.odo>0&&typeof x.tiempo==='string';
+const viajeOk=v=>v&&typeof v.id==='string'&&typeof v.nombre==='string'&&typeof v.fh==='string'&&Array.isArray(v.tramos)&&v.tramos.every(t=>t&&typeof t.id==='string'&&tomaOk(t.a)&&(t.b==null||tomaOk(t.b)));
 const hrs=t=>{const m=/^(\d{1,3}):(\d{2})$/.exec(String(t||'').trim());return m&&+m[2]<60?+m[1]+m[2]/60:null};
 const vAbierto=()=>viajes.find(v=>!v.cerrado);
 const tramoAbierto=v=>v&&v.tramos.find(t=>!t.b);
